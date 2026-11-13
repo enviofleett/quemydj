@@ -180,10 +180,6 @@ export default function LoginPage() {
 
           {/* Center Minimal Typography: Main Header and Subtext */}
           <div className="relative z-10 max-w-xl my-auto py-12 space-y-4">
-            <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400/90 block">
-              Music Requests &bull; Live DJ Interactions
-            </span>
-
             <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15] drop-shadow-md">
               Control the vibe, connect with the crowd.
             </h1>
