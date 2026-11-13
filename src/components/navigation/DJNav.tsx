@@ -97,7 +97,7 @@ export const DJNav: React.FC = () => {
               <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center border border-zinc-700/50 group-hover:scale-105 transition-all">
                 <Image
                   src="/brand-logo-transparent.png"
-                  alt="CueMyDJ"
+                  alt="QueMyDj"
                   width={32}
                   height={32}
                   priority
@@ -105,7 +105,7 @@ export const DJNav: React.FC = () => {
                 />
               </div>
               <span className="font-black text-lg text-zinc-950 dark:text-white tracking-tight">
-                CueMyDJ
+                QueMyDj
               </span>
             </Link>
             <div className="h-5 w-px bg-zinc-200 dark:bg-[#1e293b]" />
