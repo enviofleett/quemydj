@@ -136,15 +136,16 @@ export default function LoginPage() {
         <div className="absolute top-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-emerald-500/10 blur-[130px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-emerald-700/10 blur-[140px] pointer-events-none" />
 
-        {/* LEFT COLUMN: DJ Booth & Workstation Showcase */}
+        {/* LEFT COLUMN: Clean Atmospheric DJ Clubbing Background with Light Text & Headline */}
         <div className="relative w-7/12 flex flex-col justify-between p-12 lg:p-16 border-r border-white/10 z-10 overflow-hidden">
-          {/* Background hero photo with atmospheric overlay */}
+          {/* High-res cinematic blurry DJ clubbing background */}
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-30 scale-105"
+            className="absolute inset-0 bg-cover bg-center scale-110 filter blur-[8px] opacity-60"
             style={{ backgroundImage: `url('${clubImage}')` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#07090d] via-[#07090d]/90 to-[#07090d]/70" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07090d] via-transparent to-[#07090d]/60" />
+          {/* Subtle dark gradient overlay to ensure perfect contrast and mood */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/70" />
+          <div className="absolute inset-0 bg-[#07090d]/30" />
 
           {/* Top Brand Header */}
           <div className="relative z-10 flex items-center justify-between">
@@ -164,99 +165,38 @@ export default function LoginPage() {
                   QUEMYDJ
                 </span>
                 <span className="text-[10px] tracking-widest text-emerald-400 uppercase font-bold block">
-                  DJ Workstation &amp; Live Console
+                  Live DJ Experience
                 </span>
               </div>
             </Link>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Live Venue Sync Ready
-            </div>
+            <Link
+              href="/"
+              className="text-xs font-medium text-white/70 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
+            >
+              Skip as guest &rarr;
+            </Link>
           </div>
 
-          {/* Center Showcase Content */}
-          <div className="relative z-10 max-w-xl my-auto py-10 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white/80 font-medium">
-              <Radio className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Dedicated Laptop &amp; iPad Control Hub</span>
-            </div>
+          {/* Center Minimal Typography: Main Header and Subtext */}
+          <div className="relative z-10 max-w-xl my-auto py-12 space-y-4">
+            <span className="text-xs uppercase tracking-widest font-semibold text-emerald-400/90 block">
+              Music Requests &bull; Live DJ Interactions
+            </span>
 
-            <div className="space-y-3">
-              <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15]">
-                Take command of the crowd from your <span className="text-emerald-400">DJ Booth</span>.
-              </h1>
-              <p className="text-sm lg:text-base text-zinc-400 leading-relaxed max-w-lg">
-                Manage high-bounty guest song requests, lock in your live venue queue, receive instant guest tips, and automate rotations seamlessly while you mix.
-              </p>
-            </div>
+            <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.15] drop-shadow-md">
+              Control the vibe, connect with the crowd.
+            </h1>
 
-            {/* DJ Features Grid */}
-            <div className="grid grid-cols-2 gap-3.5 pt-2">
-              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md space-y-1.5 hover:border-emerald-500/40 transition-all">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Sliders className="w-4 h-4" />
-                </div>
-                <h4 className="text-sm font-bold text-white">Live Request Deck</h4>
-                <p className="text-xs text-zinc-400 leading-normal">
-                  Real-time bidding queue sorted by tip amount, venue table, and popularity.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md space-y-1.5 hover:border-emerald-500/40 transition-all">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Disc3 className="w-4 h-4" />
-                </div>
-                <h4 className="text-sm font-bold text-white">Dual-Deck Rotation</h4>
-                <p className="text-xs text-zinc-400 leading-normal">
-                  One-tap accept, decline, refund or send straight to currently playing.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md space-y-1.5 hover:border-emerald-500/40 transition-all">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Flame className="w-4 h-4" />
-                </div>
-                <h4 className="text-sm font-bold text-white">Instant Tip Payouts</h4>
-                <p className="text-xs text-zinc-400 leading-normal">
-                  100% verified guest tips deposited directly to your performer balance.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-md space-y-1.5 hover:border-emerald-500/40 transition-all">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <h4 className="text-sm font-bold text-white">Custom Booth QR</h4>
-                <p className="text-xs text-zinc-400 leading-normal">
-                  Auto-generated venue QR code ready to project on screens or print.
-                </p>
-              </div>
-            </div>
-
-            {/* Quick Demo Button for DJs */}
-            <div className="pt-2 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleDemoDjInstantLogin}
-                className="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-black font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_25px_rgba(16,185,129,0.4)] active:scale-[0.98] transition-all cursor-pointer"
-              >
-                <Zap className="w-4 h-4 fill-current" />
-                Launch DJ Workstation Demo (Instant Access)
-              </button>
-              <Link
-                href="/"
-                className="px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-bold text-xs transition-all"
-              >
-                Return to Guest Mobile View
-              </Link>
-            </div>
+            <p className="text-base text-white/80 font-normal leading-relaxed max-w-md drop-shadow">
+              Real-time crowd requests, seamless live music rotation, and direct performer tips in one unified console.
+            </p>
           </div>
 
           {/* Footer note */}
-          <div className="relative z-10 text-xs text-zinc-500 flex items-center justify-between">
-            <span>&copy; {new Date().getFullYear()} QUEMYDJ Inc. All rights reserved.</span>
-            <span>Optimized for 1080p, 1440p &amp; 4K DJ Booth Displays</span>
+          <div className="relative z-10 text-xs text-white/40 flex items-center justify-between">
+            <span>&copy; {new Date().getFullYear()} QUEMYDJ. All rights reserved.</span>
+            <span>Club Night Requests &amp; Live Console</span>
           </div>
         </div>
 
