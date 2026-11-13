@@ -161,7 +161,7 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <span className="text-xl font-black tracking-wider uppercase text-white block">
+                <span className="text-xl font-black tracking-tight text-white block">
                   QueMyDJ
                 </span>
                 <span className="text-[10px] tracking-widest text-emerald-400 uppercase font-bold block">
@@ -592,7 +592,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <h1 className="text-2xl font-black tracking-wider uppercase text-white drop-shadow-md">
+                <h1 className="text-2xl font-black tracking-tight text-white drop-shadow-md">
                   QueMyDJ
                 </h1>
                 <p className="text-xs italic font-normal text-white/85 tracking-wide max-w-[260px] mx-auto">
@@ -697,7 +697,7 @@ export default function LoginPage() {
                     className="object-contain p-1"
                   />
                 </div>
-                <h2 className="text-base font-extrabold tracking-wider uppercase text-white drop-shadow">
+                <h2 className="text-base font-extrabold tracking-tight text-white drop-shadow">
                   QueMyDJ
                 </h2>
                 <span className="text-[11px] text-white/85 font-medium">
