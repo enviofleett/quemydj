@@ -1,26 +1,176 @@
 @import "tailwindcss";
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+/* 
+  DJ Console Professional Color Tokens & Theming
+  Engineered with high contrast, precise luminance, and non-glare palettes.
+*/
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --dj-bg-root: #090a0d;
+  --dj-bg-header: #141518;
+  --dj-bg-chassis-from: #191b1f;
+  --dj-bg-chassis-via: #141518;
+  --dj-bg-chassis-to: #101114;
+  --dj-bg-card: #17181c;
+  --dj-bg-card-subtle: #121316;
+  --dj-bg-dock: #101114;
+  --dj-bg-control: #27272a;
+  --dj-bg-control-hover: #3f3f46;
+  
+  --dj-border: #27272a;
+  --dj-border-subtle: #1f2024;
+  --dj-border-highlight: #3f3f46;
+
+  --dj-text-primary: #f4f4f5;
+  --dj-text-secondary: #a1a1aa;
+  --dj-text-muted: #71717a;
+  --dj-text-faint: #52525b;
+
+  --dj-platter-outer-from: #3a3d45;
+  --dj-platter-outer-via: #1f2126;
+  --dj-platter-outer-to: #121316;
+  --dj-platter-border: rgba(113, 113, 122, 0.6);
+  --dj-platter-vinyl: #0a0a0c;
+  --dj-platter-groove: #141518;
+
+  --dj-tonearm-pivot-from: #d4d4d8;
+  --dj-tonearm-pivot-to: #52525b;
+  --dj-tonearm-shaft-from: #d4d4d8;
+  --dj-tonearm-shaft-via: #ffffff;
+  --dj-tonearm-shaft-to: #a1a1aa;
+  --dj-tonearm-cart-from: #27272a;
+  --dj-tonearm-cart-to: #09090b;
+
+  --dj-waveform-bg: rgba(0, 0, 0, 0.4);
+  --dj-waveform-unplayed: rgba(255, 255, 255, 0.18);
+  --dj-waveform-playhead: #ffffff;
+  --dj-vu-track: rgba(0, 0, 0, 0.6);
+  --dj-vu-off: #27272a;
+
+  --dj-input-bg: #18181b;
+  --dj-input-border: #27272a;
+
+  --dj-tab-active-bg: #27272a;
+  --dj-tab-active-text: #ffffff;
+  --dj-tab-inactive-text: #71717a;
+  --dj-tab-hover-text: #d4d4d8;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+[data-theme="light"],
+.theme-light {
+  --dj-bg-root: #f1f3f7;
+  --dj-bg-header: #ffffff;
+  --dj-bg-chassis-from: #e9ecf2;
+  --dj-bg-chassis-via: #e4e7ef;
+  --dj-bg-chassis-to: #dbe0eb;
+  --dj-bg-card: #ffffff;
+  --dj-bg-card-subtle: #f8fafc;
+  --dj-bg-dock: #f1f4f8;
+  --dj-bg-control: #e4e7ec;
+  --dj-bg-control-hover: #d2d6df;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --dj-border: #d0d5dd;
+  --dj-border-subtle: #e4e7ec;
+  --dj-border-highlight: #98a2b3;
+
+  --dj-text-primary: #0f172a;
+  --dj-text-secondary: #334155;
+  --dj-text-muted: #64748b;
+  --dj-text-faint: #94a3b8;
+
+  --dj-platter-outer-from: #ffffff;
+  --dj-platter-outer-via: #e2e8f0;
+  --dj-platter-outer-to: #cbd5e1;
+  --dj-platter-border: rgba(148, 163, 184, 0.6);
+  --dj-platter-vinyl: #1a1d24;
+  --dj-platter-groove: #262a33;
+
+  --dj-tonearm-pivot-from: #cbd5e1;
+  --dj-tonearm-pivot-to: #64748b;
+  --dj-tonearm-shaft-from: #94a3b8;
+  --dj-tonearm-shaft-via: #e2e8f0;
+  --dj-tonearm-shaft-to: #64748b;
+  --dj-tonearm-cart-from: #334155;
+  --dj-tonearm-cart-to: #0f172a;
+
+  --dj-waveform-bg: rgba(226, 232, 240, 0.7);
+  --dj-waveform-unplayed: rgba(100, 116, 139, 0.28);
+  --dj-waveform-playhead: #0f172a;
+  --dj-vu-track: rgba(203, 213, 225, 0.6);
+  --dj-vu-off: #cbd5e1;
+
+  --dj-input-bg: #f8fafc;
+  --dj-input-border: #cbd5e1;
+
+  --dj-tab-active-bg: #ffffff;
+  --dj-tab-active-text: #0f172a;
+  --dj-tab-inactive-text: #64748b;
+  --dj-tab-hover-text: #0f172a;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--dj-bg-root);
+  color: var(--dj-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Native dialog scroll containment per Modern Web Guidance */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+/* Subtle native scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 9999px;
+}
+
+/* Restrained, physical acoustic transducer breathing motion */
+@keyframes speaker-excursion {
+  0%, 100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.035);
+  }
+  55% {
+    transform: scale(0.985);
+  }
+  75% {
+    transform: scale(1.015);
+  }
+}
+
+.animate-speaker-cone {
+  transform-origin: center;
+  animation: speaker-excursion 1.8s infinite cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Hide Next.js development floating badge watermark permanently */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-dev-overlay],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
