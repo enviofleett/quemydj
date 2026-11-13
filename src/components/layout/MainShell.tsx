@@ -8,9 +8,10 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({ children })
   const pathname = usePathname();
   const isWorkstation = pathname === '/dj/workstation';
   const isLogin = pathname === '/login';
+  const isAdmin = pathname.startsWith('/admin');
   const isDJArea = pathname.startsWith('/dj');
 
-  if (isLogin) {
+  if (isLogin || isAdmin) {
     return (
       <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#090b0e] text-white">
         {children}
