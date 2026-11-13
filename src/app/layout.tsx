@@ -4,13 +4,13 @@ import { CueAppProvider } from '@/context/CueAppContext';
 import { MainShell } from '@/components/layout/MainShell';
 
 export const metadata: Metadata = {
-  title: 'QUEMYDJ — Live Social DJ Console & Venue Requests',
+  title: 'QueMyDJ — Live Social DJ Console & Venue Requests',
   description: 'Pro DJ Console & Live Venue Song Request Network.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'QUEMYDJ',
+    title: 'QueMyDJ',
   },
 };
 

@@ -19,7 +19,7 @@ export const Header: React.FC = () => {
           <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center shadow-xs">
             <Image
               src="/brand-logo-transparent.png"
-              alt="QUEMYDJ"
+              alt="QueMyDJ"
               width={32}
               height={32}
               priority
@@ -27,7 +27,7 @@ export const Header: React.FC = () => {
             />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-gray-900 group-hover:text-emerald-600 transition-colors">
-            QUEMYDJ
+            QueMyDJ
           </span>
         </Link>
 

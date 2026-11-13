@@ -540,7 +540,7 @@ export default function GuestProfilePage() {
                       1. Song Requests &amp; DJ Discretion
                     </h4>
                     <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                      All songs requested on QUEMYDJ are subject to real-time DJ review. The performer maintains editorial control to match crowd energy and venue music policy.
+                      All songs requested on QueMyDJ are subject to real-time DJ review. The performer maintains editorial control to match crowd energy and venue music policy.
                     </p>
                   </div>
 
@@ -578,7 +578,7 @@ export default function GuestProfilePage() {
                       1. Bank-Grade Payment Security
                     </h4>
                     <p className="text-[12px] text-emerald-700 dark:text-emerald-300/90 leading-relaxed">
-                      All card and mobile money transactions are tokenized via PCI-DSS certified gateways (Paystack). QUEMYDJ never stores raw debit card numbers, PINs, or CVV codes.
+                      All card and mobile money transactions are tokenized via PCI-DSS certified gateways (Paystack). QueMyDJ never stores raw debit card numbers, PINs, or CVV codes.
                     </p>
                   </div>
 

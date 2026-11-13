@@ -257,12 +257,12 @@ export default function MobileSocialHomePage() {
           <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center flex-shrink-0 shadow-xs border border-zinc-200/40 dark:border-white/10">
             <img
               src="/brand-logo-transparent.png"
-              alt="QUEMYDJ Logo"
+              alt="QueMyDJ Logo"
               className="w-full h-full object-contain p-0.5"
             />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-extrabold text-[17px] tracking-tight text-zinc-950 dark:text-white">QUEMYDJ</span>
+            <span className="font-extrabold text-[17px] tracking-tight text-zinc-950 dark:text-white">QueMyDJ</span>
           </div>
         </div>
 

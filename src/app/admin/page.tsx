@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
               <div className="w-9 h-9 rounded-xl bg-black border border-white/20 p-1 flex items-center justify-center shadow-lg shadow-emerald-950/40">
                 <Image
                   src="/brand-logo-transparent.png"
-                  alt="QueMyDj Logo"
+                  alt="QueMyDJ Logo"
                   width={28}
                   height={28}
                   className="object-contain"
@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
               </div>
               <div>
                 <span className="font-black text-lg text-white tracking-tight block">
-                  QueMyDj
+                  QueMyDJ
                 </span>
                 <span className="text-[10px] font-mono tracking-widest text-emerald-400 font-bold uppercase block">
                   SUPER ADMIN
@@ -792,7 +792,7 @@ export default function AdminDashboardPage() {
                     Platform Commission Rate (%)
                   </label>
                   <p className="text-xs text-zinc-400">
-                    Percentage retained by QueMyDj on every accepted song request and tip.
+                    Percentage retained by QueMyDJ on every accepted song request and tip.
                   </p>
                   <div className="flex items-center gap-3">
                     <input

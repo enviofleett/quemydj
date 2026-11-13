@@ -282,7 +282,7 @@ export default function DJQStudioWorkstationPage() {
             <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center border border-zinc-700/50 group-hover:scale-105 transition-all">
               <Image
                 src="/brand-logo-transparent.png"
-                alt="QueMyDj"
+                alt="QueMyDJ"
                 width={32}
                 height={32}
                 priority
@@ -290,7 +290,7 @@ export default function DJQStudioWorkstationPage() {
               />
             </div>
             <span className="font-black text-base sm:text-lg text-[var(--dj-text-primary)] tracking-tight">
-              QueMyDj
+              QueMyDJ
             </span>
             <span className="px-1.5 py-0.5 rounded text-[9px] font-mono tracking-widest uppercase bg-zinc-200/70 dark:bg-white/10 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/20 font-bold">
               STUDIO

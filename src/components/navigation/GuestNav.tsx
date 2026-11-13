@@ -111,7 +111,7 @@ export const GuestNav: React.FC = () => {
             <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center border border-white/10 group-hover:scale-105 transition-all">
               <Image
                 src="/brand-logo-transparent.png"
-                alt="QueMyDj"
+                alt="QueMyDJ"
                 width={32}
                 height={32}
                 priority
@@ -119,7 +119,7 @@ export const GuestNav: React.FC = () => {
               />
             </div>
             <span className="font-black text-lg text-white tracking-tight group-hover:text-emerald-400 transition-colors">
-              QueMyDj
+              QueMyDJ
             </span>
           </Link>
 

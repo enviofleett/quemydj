@@ -153,7 +153,7 @@ export default function LoginPage() {
               <div className="relative w-11 h-11 rounded-full overflow-hidden border border-white/30 bg-black/60 shadow-[0_0_20px_rgba(16,185,129,0.3)] flex items-center justify-center backdrop-blur-md group-hover:border-emerald-400 transition-all">
                 <Image
                   src="/brand-logo-transparent.png"
-                  alt="QUEMYDJ Logo"
+                  alt="QueMyDJ Logo"
                   width={44}
                   height={44}
                   priority
@@ -162,7 +162,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <span className="text-xl font-black tracking-wider uppercase text-white block">
-                  QUEMYDJ
+                  QueMyDJ
                 </span>
                 <span className="text-[10px] tracking-widest text-emerald-400 uppercase font-bold block">
                   Live DJ Experience
@@ -191,7 +191,7 @@ export default function LoginPage() {
 
           {/* Footer note */}
           <div className="relative z-10 text-xs text-white/40 flex items-center justify-between">
-            <span>&copy; {new Date().getFullYear()} QUEMYDJ. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} QueMyDJ. All rights reserved.</span>
             <span>Club Night Requests &amp; Live Console</span>
           </div>
         </div>
@@ -568,7 +568,7 @@ export default function LoginPage() {
             {/* Top Bar */}
             <div className="relative z-10 pt-2 flex items-center justify-between">
               <span className="text-[11px] tracking-widest uppercase font-medium text-white/50">
-                QUEMYDJ
+                QueMyDJ
               </span>
               <Link
                 href="/"
@@ -583,7 +583,7 @@ export default function LoginPage() {
               <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-white/60 shadow-[0_0_35px_rgba(16,185,129,0.35)] bg-black/60 flex items-center justify-center backdrop-blur-md">
                 <Image
                   src="/brand-logo-transparent.png"
-                  alt="QUEMYDJ Logo"
+                  alt="QueMyDJ Logo"
                   width={96}
                   height={96}
                   priority
@@ -593,7 +593,7 @@ export default function LoginPage() {
 
               <div className="space-y-1.5">
                 <h1 className="text-2xl font-black tracking-wider uppercase text-white drop-shadow-md">
-                  QUEMYDJ
+                  QueMyDJ
                 </h1>
                 <p className="text-xs italic font-normal text-white/85 tracking-wide max-w-[260px] mx-auto">
                   Club music requests &amp; live DJ interactions brought to you.
@@ -698,7 +698,7 @@ export default function LoginPage() {
                   />
                 </div>
                 <h2 className="text-base font-extrabold tracking-wider uppercase text-white drop-shadow">
-                  QUEMYDJ
+                  QueMyDJ
                 </h2>
                 <span className="text-[11px] text-white/85 font-medium">
                   {role === 'guest' ? 'Club Guest App' : 'Resident Booth Console'}
@@ -986,7 +986,7 @@ export default function LoginPage() {
               {/* Bottom minimal brand footnote */}
               <div className="text-center pt-2">
                 <span className="text-[10px] text-[#8e8778] font-medium">
-                  QUEMYDJ &bull; Night Club Requests &amp; Live Console
+                  QueMyDJ &bull; Night Club Requests &amp; Live Console
                 </span>
               </div>
             </div>
@@ -1110,7 +1110,7 @@ export default function LoginPage() {
                 <>
                   <p className="font-semibold text-zinc-800">1. Music Requests &amp; Queue Management</p>
                   <p>
-                    All songs requested on QUEMYDJ are subject to DJ queue discretion and venue programming. If a request cannot be played or is declined by the DJ, 100% of the funds are credited back to the guest wallet or refunded immediately.
+                    All songs requested on QueMyDJ are subject to DJ queue discretion and venue programming. If a request cannot be played or is declined by the DJ, 100% of the funds are credited back to the guest wallet or refunded immediately.
                   </p>
                   <p className="font-semibold text-zinc-800">2. Night Wallets &amp; Tipping</p>
                   <p>
@@ -1125,11 +1125,11 @@ export default function LoginPage() {
                 <>
                   <p className="font-semibold text-zinc-800">1. Data Privacy</p>
                   <p>
-                    QUEMYDJ values your privacy. We collect your phone number and email solely for song receipt notifications, wallet management, and account recovery.
+                    QueMyDJ values your privacy. We collect your phone number and email solely for song receipt notifications, wallet management, and account recovery.
                   </p>
                   <p className="font-semibold text-zinc-800">2. Payment Security</p>
                   <p>
-                    All credit/debit transactions and Paystack deposits are processed with PCI-DSS banking level encryption. QUEMYDJ never stores raw card details.
+                    All credit/debit transactions and Paystack deposits are processed with PCI-DSS banking level encryption. QueMyDJ never stores raw card details.
                   </p>
                   <p className="font-semibold text-zinc-800">3. Song Request History</p>
                   <p>
