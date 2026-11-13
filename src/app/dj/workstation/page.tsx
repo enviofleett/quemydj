@@ -302,19 +302,6 @@ export default function DJQStudioWorkstationPage() {
 
         {/* Center Live Session Telemetry */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 order-3 sm:order-2 w-full sm:w-auto justify-between sm:justify-start pt-1 sm:pt-0 border-t sm:border-t-0 border-[var(--dj-border-subtle)]">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-2.5 w-2.5 relative flex-shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-            </span>
-            <div className="text-[12px] font-bold text-[var(--dj-text-primary)] truncate max-w-[160px] sm:max-w-[220px]">
-              {session?.title || 'Skyline Rooftop Live Set'}
-            </div>
-            <span className="text-[11px] text-[var(--dj-text-muted)] hidden lg:inline truncate">
-              · {currentDj.currentVenue.name}
-            </span>
-          </div>
-
           <div className="flex items-center gap-1.5 text-[11px] font-mono text-[var(--dj-text-muted)] flex-shrink-0">
             <Clock className="w-3.5 h-3.5 text-cyan-500 dark:text-cyan-400" />
             <span>{formatSessionTime(sessionSeconds)}</span>
