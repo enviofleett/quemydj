@@ -289,33 +289,6 @@ export default function VenueOwnerPortalPage() {
         {/* TAB 1: REVENUE (Renamed from Live Spend with Day/Week/Month Filter) */}
         {activeTab === 'revenue' && (
           <>
-            {/* TIME RANGE FILTER: Day / Week / Month */}
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <span className="text-[12px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                Earnings Horizon
-              </span>
-              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 text-[11px] font-semibold">
-                {[
-                  { id: 'day', label: 'Today (Live)' },
-                  { id: 'week', label: 'This Week' },
-                  { id: 'month', label: 'This Month' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setTimeFilter(item.id as typeof timeFilter)}
-                    className={`px-2.5 py-1 rounded-md transition-all ${
-                      timeFilter === item.id
-                        ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-xs font-bold'
-                        : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* ATMOSPHERIC EDITORIAL HERO BANNER */}
             <section className="relative w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 text-white flex flex-col justify-between p-5 shadow-[0_8px_30px_rgba(0,0,0,0.18)] min-h-[300px]">
               {/* Full-bleed atmospheric club photography */}
@@ -375,6 +348,28 @@ export default function VenueOwnerPortalPage() {
                 </div>
               </div>
             </section>
+
+            {/* TIME RANGE FILTER: Positioned cleanly beneath the banner */}
+            <div className="p-1 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 grid grid-cols-3 gap-1">
+              {[
+                { id: 'day', label: 'Today (Live)' },
+                { id: 'week', label: 'This Week' },
+                { id: 'month', label: 'This Month' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTimeFilter(item.id as typeof timeFilter)}
+                  className={`h-8 rounded-lg text-[12px] font-semibold transition-all flex items-center justify-center cursor-pointer ${
+                    timeFilter === item.id
+                      ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
+                      : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
 
             {/* ACTIVE RESIDENT DJ IN THE BUILDING */}
             <div className="rounded-2xl p-4 bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
