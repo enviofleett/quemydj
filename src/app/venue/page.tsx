@@ -237,40 +237,12 @@ export default function VenueOwnerPortalPage() {
           </div>
         </div>
 
-        {/* Right: Venue Live Status, Theme Toggle, Profile & Sign Out */}
+        {/* Right: Venue Live Status & Sign Out */}
         <div className="flex items-center gap-2 shrink-0">
           {/* Active Revenue Pill */}
           <div className="hidden sm:flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
             <span>₦{venueCut.toLocaleString()}</span>
           </div>
-
-          {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleThemeMode}
-            title={themeMode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center justify-center transition-colors cursor-pointer"
-          >
-            {themeMode === 'light' ? (
-              <Moon className="w-4 h-4 text-zinc-700" />
-            ) : (
-              <Sun className="w-4 h-4 text-amber-400" />
-            )}
-          </button>
-
-          {/* Profile / Settings Trigger */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('settings')}
-            title="Venue Settings & Profile"
-            className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-colors cursor-pointer ${
-              activeTab === 'settings'
-                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400'
-                : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-          </button>
 
           {/* Standalone Sign Out Button */}
           <button
