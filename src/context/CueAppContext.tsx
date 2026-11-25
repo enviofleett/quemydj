@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DJ, Song, SongRequest, RequestStatus, GuestUser, WalletTransaction } from '@/types';
+import { DJ, Song, SongRequest, RequestStatus, GuestUser, WalletTransaction, ClubVenue, DisputeRecord, VenueCommissionSplit } from '@/types';
 import { MOCK_DJS, MOCK_SONGS, INITIAL_REQUESTS } from '@/data/mockData';
+import { INITIAL_VENUES, INITIAL_DISPUTES } from '@/data/mockAdminData';
 import {
   saveTrackToCrateDB,
   getAllTracksFromCrateDB,
@@ -14,6 +15,7 @@ import {
   updateSongRequestStatusInDb,
   subscribeToSessionRealtime,
 } from '@/services/realtimeSyncService';
+import { getSupabaseClient } from '@/services/supabaseClient';
 
 interface CueAppContextType {
   // Theme Mode
@@ -60,7 +62,9 @@ interface CueAppContextType {
     guestNote?: string;
     amount: number;
     tip?: number;
-    paymentMethod: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet';
+    paymentMethod: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet' | 'Paystack';
+    paymentReference?: string;
+    paymentVerifiedServerSide?: boolean;
   }) => SongRequest;
   updateRequestStatus: (
     requestId: string,
@@ -88,178 +92,286 @@ interface CueAppContextType {
   };
   setUserLocation: (loc: { city: string; hasPermission: boolean }) => void;
 
+  // Venues, Split Engine & Umpire Admin
+  venues: ClubVenue[];
+  activeVenue: ClubVenue;
+  setActiveVenueId: (venueId: string) => void;
+  updateVenueSplit: (venueId: string, split: VenueCommissionSplit) => void;
+  addVenue: (venue: Omit<ClubVenue, 'id' | 'totalRevenueGenerated' | 'totalCommissionPaid'>) => void;
+  disputes: DisputeRecord[];
+  resolveDispute: (disputeId: string, action: 'refund_guest' | 'release_to_dj', note?: string) => void;
+
   // Reset to initial demo state
   resetDemoData: () => void;
 }
 
 const CueAppContext = createContext<CueAppContextType | undefined>(undefined);
 
-const STORAGE_KEY_REQUESTS = 'cuemydj_requests_prod_v1';
+const STORAGE_KEY_REQUESTS = 'cuemydj_requests_prod_v2';
 const STORAGE_KEY_ROLE = 'cuemydj_role_prod_v1';
-const STORAGE_KEY_DJS = 'cuemydj_djs_prod_v1';
+const STORAGE_KEY_DJS = 'cuemydj_djs_prod_v2';
 const STORAGE_KEY_LIBRARY = 'cuemydj_library_prod_v1';
 const STORAGE_KEY_THEME = 'cuemydj_theme_mode_v1';
-const STORAGE_KEY_GUEST_USER = 'cuemydj_guest_user_v1';
-const STORAGE_KEY_WALLET_TX = 'cuemydj_wallet_tx_v1';
+const STORAGE_KEY_GUEST_USER = 'cuemydj_guest_user_v2';
+const STORAGE_KEY_WALLET_TX = 'cuemydj_wallet_tx_v2';
 const STORAGE_KEY_DJ_AUTH = 'cuemydj_dj_auth_v1';
-
-const DEFAULT_GUEST: GuestUser = {
-  id: 'guest_alex_rivers',
-  name: 'Alex Rivers',
-  phoneOrEmail: 'alex.rivers@icloud.com',
-  isRegistered: true,
-  walletBalance: 20000,
-  createdAt: '2026-03-27T00:00:00.000Z',
-};
+const STORAGE_KEY_VENUES = 'cuemydj_venues_v2';
+const STORAGE_KEY_DISPUTES = 'cuemydj_disputes_v2';
+const STORAGE_KEY_ACTIVE_VENUE_ID = 'cuemydj_active_venue_id_v1';
 
 const ANONYMOUS_GUEST: GuestUser = {
   id: 'guest_anon',
-  name: 'VIP Club Guest',
+  name: 'Guest',
   phoneOrEmail: '',
   isRegistered: false,
   walletBalance: 0,
-  createdAt: new Date().toISOString(),
+  createdAt: '2026-01-01T00:00:00.000Z',
+};
+
+const EMPTY_DJ_PLACEHOLDER: DJ = {
+  id: 'loading-dj',
+  name: 'Resident DJ',
+  handle: '@dj',
+  avatarUrl:
+    'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=300&auto=format&fit=crop&q=80',
+  bannerUrl:
+    'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1600&auto=format&fit=crop',
+  bio: '',
+  genres: [],
+  rating: 5.0,
+  totalSets: 0,
+  currentVenue: {
+    name: 'Live Booth',
+    city: 'Lagos',
+    distance: 'Live',
+    address: '',
+    lat: 6.4281,
+    lng: 3.4219,
+  },
+  liveSession: {
+    id: 'session-pending',
+    title: 'Live Set',
+    startTime: '10:00 PM',
+    endTime: '04:00 AM',
+    isAcceptingRequests: true,
+    basePrice: 5000,
+    serviceFee: 500,
+    requestRules: [],
+    passcode: '',
+  },
 };
 
 export function CueAppProvider({ children }: { children: React.ReactNode }) {
   const [themeMode, setThemeModeState] = useState<'dark' | 'light'>('dark');
-  const [userRole, setUserRoleState] = useState<'guest' | 'dj'>('dj');
-  const [isDjAuthenticated, setIsDjAuthenticated] = useState<boolean>(true);
-  const [djs, setDjs] = useState<DJ[]>(MOCK_DJS);
+  const [userRole, setUserRoleState] = useState<'guest' | 'dj'>('guest');
+  const [isDjAuthenticated, setIsDjAuthenticated] = useState<boolean>(false);
+  const [authenticatedDjId, setAuthenticatedDjId] = useState<string | null>(null);
+  const [djs, setDjs] = useState<DJ[]>([]);
   const [requests, setRequests] = useState<SongRequest[]>([]);
   const [djLibrary, setDjLibrary] = useState<Song[]>([]);
-  const [currentUser, setCurrentUser] = useState<GuestUser>(DEFAULT_GUEST);
+  const [currentUser, setCurrentUser] = useState<GuestUser>(ANONYMOUS_GUEST);
   const [walletTransactions, setWalletTransactions] = useState<WalletTransaction[]>([]);
+  const [venues, setVenues] = useState<ClubVenue[]>(INITIAL_VENUES);
+  const [disputes, setDisputes] = useState<DisputeRecord[]>([]);
+  const [activeVenueId, setActiveVenueIdState] = useState<string>('venue-skyline');
 
-  const currentDj = djs.find((d) => d.id === 'dj-kofi') || djs[0];
+  const currentDj =
+    (authenticatedDjId && djs.find((d) => d.id === authenticatedDjId)) ||
+    djs[0] ||
+    EMPTY_DJ_PLACEHOLDER;
+  const activeVenue = venues.find((v) => v.id === activeVenueId) || venues[0];
 
   // Sync persisted state after client hydration so SSR and initial client render match 100%
   useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) as 'dark' | 'light' | null;
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        setThemeModeState(savedTheme);
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        if (savedTheme === 'light') {
-          document.documentElement.classList.add('theme-light');
-          document.documentElement.classList.remove('dark');
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) as 'dark' | 'light' | null;
+        if (savedTheme === 'light' || savedTheme === 'dark') {
+          setThemeModeState(savedTheme);
+          document.documentElement.setAttribute('data-theme', savedTheme);
+          if (savedTheme === 'light') {
+            document.documentElement.classList.add('theme-light');
+            document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.remove('theme-light');
+            document.documentElement.classList.add('dark');
+          }
         } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
           document.documentElement.classList.remove('theme-light');
           document.documentElement.classList.add('dark');
         }
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.documentElement.classList.remove('theme-light');
-        document.documentElement.classList.add('dark');
-      }
 
-      const savedDjAuth = localStorage.getItem(STORAGE_KEY_DJ_AUTH);
-      if (savedDjAuth !== null) {
-        setIsDjAuthenticated(savedDjAuth === 'true');
-      }
-
-      const savedRole = localStorage.getItem(STORAGE_KEY_ROLE) as 'guest' | 'dj' | null;
-      if (savedRole) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUserRoleState(savedRole);
-      }
-
-      const savedDjs = localStorage.getItem(STORAGE_KEY_DJS);
-      if (savedDjs) {
-        setDjs(JSON.parse(savedDjs));
-      }
-
-      const savedReqs = localStorage.getItem(STORAGE_KEY_REQUESTS);
-      if (savedReqs) {
-        setRequests(JSON.parse(savedReqs));
-      }
-
-      const savedLib = localStorage.getItem(STORAGE_KEY_LIBRARY);
-      if (savedLib) {
-        setDjLibrary(JSON.parse(savedLib));
-      }
-
-      const savedGuest = localStorage.getItem(STORAGE_KEY_GUEST_USER);
-      if (savedGuest) {
-        setCurrentUser(JSON.parse(savedGuest));
-      } else {
-        // Initial guest fallback
-        const initialGuest: GuestUser = {
-          id: 'guest_alex_rivers',
-          name: 'Alex Rivers',
-          phoneOrEmail: 'alex.rivers@icloud.com',
-          isRegistered: true,
-          walletBalance: 20000,
-          createdAt: new Date().toISOString(),
-        };
-        setCurrentUser(initialGuest);
-        localStorage.setItem(STORAGE_KEY_GUEST_USER, JSON.stringify(initialGuest));
-      }
-
-      const savedTx = localStorage.getItem(STORAGE_KEY_WALLET_TX);
-      if (savedTx) {
-        setWalletTransactions(JSON.parse(savedTx));
-      } else {
-        const initialTx: WalletTransaction[] = [
-          {
-            id: 'tx_init_1',
-            type: 'topup',
-            amount: 25000,
-            description: 'Night Club Wallet Top-Up (Paystack Transfer)',
-            createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-            reference: 'WAL-TOP-8812',
-          },
-          {
-            id: 'tx_init_2',
-            type: 'request_payment',
-            amount: 5000,
-            description: 'Song Request: Unavailable (feat. Musa Keys)',
-            createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-            reference: 'WAL-REQ-9011',
-          },
-        ];
-        setWalletTransactions(initialTx);
-        localStorage.setItem(STORAGE_KEY_WALLET_TX, JSON.stringify(initialTx));
-      }
-
-      // Rehydrate local audio blobs from persistent IndexedDB
-      getAllTracksFromCrateDB().then((idbTracks) => {
-        if (idbTracks && idbTracks.length > 0) {
-          const restored: Song[] = idbTracks.map((item) => {
-            const meta = item.metadata as unknown as Song;
-            const objectUrl = item.audioBlob ? URL.createObjectURL(item.audioBlob) : meta.previewUrl;
-            return {
-              ...meta,
-              id: item.id,
-              previewUrl: objectUrl,
-              availability: 'in_library',
-            };
-          });
-
-          setDjLibrary((prev) => {
-            const existingIds = new Set(prev.map((s) => s.id));
-            const newOnes = restored.filter((r) => !existingIds.has(r.id));
-            return [...newOnes, ...prev];
-          });
+        const savedDjAuth = localStorage.getItem(STORAGE_KEY_DJ_AUTH);
+        if (savedDjAuth !== null) {
+          setIsDjAuthenticated(savedDjAuth === 'true');
         }
-      }).catch((e) => console.warn('IndexedDB load notice:', e));
 
-      // Attempt to load live production requests from Supabase
-      const activeSessionId = 'session-skyline-friday';
-      fetchSessionRequestsFromDb(activeSessionId).then((dbReqs) => {
-        if (dbReqs && dbReqs.length > 0) {
-          setRequests((prev) => {
-            const map = new Map<string, SongRequest>();
-            // Keep local items, but prioritize DB records
-            prev.forEach((r) => map.set(r.id, r));
-            dbReqs.forEach((r) => map.set(r.id, r));
-            return Array.from(map.values()).sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
+        const savedRole = localStorage.getItem(STORAGE_KEY_ROLE) as 'guest' | 'dj' | null;
+        if (savedRole) {
+          setUserRoleState(savedRole);
+        }
+
+        const savedDjs = localStorage.getItem(STORAGE_KEY_DJS);
+        if (savedDjs) {
+          setDjs(JSON.parse(savedDjs));
+        }
+
+        const savedReqs = localStorage.getItem(STORAGE_KEY_REQUESTS);
+        if (savedReqs) {
+          setRequests(JSON.parse(savedReqs));
+        }
+
+        const savedLib = localStorage.getItem(STORAGE_KEY_LIBRARY);
+        if (savedLib) {
+          setDjLibrary(JSON.parse(savedLib));
+        }
+
+        const savedGuest = localStorage.getItem(STORAGE_KEY_GUEST_USER);
+        if (savedGuest) {
+          setCurrentUser(JSON.parse(savedGuest));
+        }
+
+        const savedTx = localStorage.getItem(STORAGE_KEY_WALLET_TX);
+        if (savedTx) {
+          setWalletTransactions(JSON.parse(savedTx));
+        }
+      } catch {}
+    });
+
+    // Rehydrate local audio blobs from persistent IndexedDB
+    getAllTracksFromCrateDB().then((idbTracks) => {
+      if (!cancelled && idbTracks && idbTracks.length > 0) {
+        const restored: Song[] = idbTracks.map((item) => {
+          const meta = item.metadata as unknown as Song;
+          const objectUrl = item.audioBlob ? URL.createObjectURL(item.audioBlob) : meta.previewUrl;
+          return {
+            ...meta,
+            id: item.id,
+            previewUrl: objectUrl,
+            availability: 'in_library',
+          };
+        });
+
+        setDjLibrary((prev) => {
+          const existingIds = new Set(prev.map((s) => s.id));
+          const newOnes = restored.filter((r) => !existingIds.has(r.id));
+          return [...newOnes, ...prev];
+        });
+      }
+    }).catch((e) => console.warn('IndexedDB load notice:', e));
+
+    // Load real registered DJs from Supabase (/api/djs)
+    fetch('/api/djs')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.source === 'supabase' && Array.isArray(data.djs)) {
+          setDjs(data.djs);
+          try {
+            localStorage.setItem(STORAGE_KEY_DJS, JSON.stringify(data.djs));
+          } catch {}
+          // Fetch live requests for the active DJ session from Supabase
+          const firstSessionId = data.djs[0]?.liveSession?.id;
+          if (firstSessionId) {
+            fetchSessionRequestsFromDb(firstSessionId)
+              .then((dbReqs) => {
+                if (!cancelled && dbReqs) {
+                  setRequests(dbReqs);
+                }
+              })
+              .catch(() => {});
+          }
+        }
+      })
+      .catch(() => {});
+
+    // Sync Supabase Auth state if client configured
+    const supabase = getSupabaseClient();
+    let authListenerSubscription: { unsubscribe: () => void } | null = null;
+    if (supabase) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (cancelled || !session?.user) return;
+        const u = session.user;
+        const role = u.user_metadata?.role;
+        const name = u.user_metadata?.name || u.email?.split('@')[0] || 'User';
+
+        if (role === 'dj') {
+          setIsDjAuthenticated(true);
+          setAuthenticatedDjId(u.id);
+          setUserRoleState('dj');
+          try {
+            localStorage.setItem(STORAGE_KEY_DJ_AUTH, 'true');
+            localStorage.setItem(STORAGE_KEY_ROLE, 'dj');
+          } catch {}
+        } else {
+          setCurrentUser((prev) => {
+            const updated: GuestUser = {
+              ...prev,
+              id: u.id,
+              name,
+              phoneOrEmail: u.email || prev.phoneOrEmail,
+              isRegistered: true,
+            };
+            try {
+              localStorage.setItem(STORAGE_KEY_GUEST_USER, JSON.stringify(updated));
+            } catch {}
+            return updated;
           });
         }
       }).catch(() => {});
-    } catch {}
+
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (cancelled) return;
+        if (session?.user) {
+          const u = session.user;
+          const role = u.user_metadata?.role;
+          const name = u.user_metadata?.name || u.email?.split('@')[0] || 'User';
+
+          if (role === 'dj') {
+            setIsDjAuthenticated(true);
+            setAuthenticatedDjId(u.id);
+            setUserRoleState('dj');
+            try {
+              localStorage.setItem(STORAGE_KEY_DJ_AUTH, 'true');
+              localStorage.setItem(STORAGE_KEY_ROLE, 'dj');
+            } catch {}
+            // Refresh DJs list from Supabase so newly registered DJs appear immediately
+            fetch('/api/djs')
+              .then((res) => (res.ok ? res.json() : null))
+              .then((djData) => {
+                if (!cancelled && djData?.source === 'supabase' && Array.isArray(djData.djs) && djData.djs.length > 0) {
+                  setDjs(djData.djs);
+                }
+              })
+              .catch(() => {});
+          } else {
+            setCurrentUser((prev) => {
+              const updated: GuestUser = {
+                ...prev,
+                id: u.id,
+                name,
+                phoneOrEmail: u.email || prev.phoneOrEmail,
+                isRegistered: true,
+              };
+              try {
+                localStorage.setItem(STORAGE_KEY_GUEST_USER, JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        }
+      });
+      authListenerSubscription = data.subscription;
+    }
+
+    return () => {
+      cancelled = true;
+      if (authListenerSubscription) {
+        authListenerSubscription.unsubscribe();
+      }
+    };
   }, []);
 
   // Real-time Supabase subscription: instantly pop up incoming requests & sync status
@@ -367,35 +479,62 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateDjSessionStatus = (isAccepting: boolean) => {
+    let targetLiveSession: DJ['liveSession'] | undefined;
     const updated = djs.map((d) => {
       if (d.id === currentDj.id && d.liveSession) {
+        targetLiveSession = {
+          ...d.liveSession,
+          isAcceptingRequests: isAccepting,
+        };
         return {
           ...d,
-          liveSession: {
-            ...d.liveSession,
-            isAcceptingRequests: isAccepting,
-          },
+          liveSession: targetLiveSession,
         };
       }
       return d;
     });
     saveDjs(updated);
+    if (typeof window !== 'undefined') {
+      fetch('/api/djs', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: currentDj.id,
+          isAcceptingRequests: isAccepting,
+          liveSession: targetLiveSession,
+        }),
+      }).catch(() => {});
+    }
   };
 
   const updateDjSessionDetails = (details: Partial<NonNullable<DJ['liveSession']>>) => {
+    let targetLiveSession: DJ['liveSession'] | undefined;
     const updated = djs.map((d) => {
       if (d.id === currentDj.id && d.liveSession) {
+        targetLiveSession = {
+          ...d.liveSession,
+          ...details,
+        };
         return {
           ...d,
-          liveSession: {
-            ...d.liveSession,
-            ...details,
-          },
+          liveSession: targetLiveSession,
         };
       }
       return d;
     });
     saveDjs(updated);
+    if (typeof window !== 'undefined') {
+      fetch('/api/djs', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: currentDj.id,
+          basePrice: details.basePrice,
+          passcode: details.passcode,
+          liveSession: targetLiveSession,
+        }),
+      }).catch(() => {});
+    }
   };
 
   const updateDjProfile = (updates: {
@@ -406,26 +545,39 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
     basePrice?: number;
     passcode?: string;
   }) => {
+    let targetLiveSession: DJ['liveSession'] | undefined;
     const updated = djs.map((d) => {
       if (d.id === currentDj.id) {
+        targetLiveSession = d.liveSession
+          ? {
+              ...d.liveSession,
+              basePrice: updates.basePrice !== undefined ? updates.basePrice : d.liveSession.basePrice,
+              passcode: updates.passcode !== undefined ? updates.passcode : d.liveSession.passcode,
+            }
+          : d.liveSession;
         return {
           ...d,
           name: updates.name !== undefined ? updates.name : d.name,
           handle: updates.handle !== undefined ? updates.handle : d.handle,
           bio: updates.bio !== undefined ? updates.bio : d.bio,
           genres: updates.genres !== undefined ? updates.genres : d.genres,
-          liveSession: d.liveSession
-            ? {
-                ...d.liveSession,
-                basePrice: updates.basePrice !== undefined ? updates.basePrice : d.liveSession.basePrice,
-                passcode: updates.passcode !== undefined ? updates.passcode : d.liveSession.passcode,
-              }
-            : d.liveSession,
+          liveSession: targetLiveSession,
         };
       }
       return d;
     });
     saveDjs(updated);
+    if (typeof window !== 'undefined') {
+      fetch('/api/djs', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: currentDj.id,
+          ...updates,
+          liveSession: targetLiveSession,
+        }),
+      }).catch(() => {});
+    }
   };
 
   const createRequest = ({
@@ -437,6 +589,8 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
     amount,
     tip = 0,
     paymentMethod,
+    paymentReference,
+    paymentVerifiedServerSide = false,
   }: {
     sessionId: string;
     djId: string;
@@ -445,16 +599,19 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
     guestNote?: string;
     amount: number;
     tip?: number;
-    paymentMethod: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet';
+    paymentMethod: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet' | 'Paystack';
+    paymentReference?: string;
+    paymentVerifiedServerSide?: boolean;
   }): SongRequest => {
     const targetDj = djs.find((d) => d.id === djId) || currentDj;
-    const serviceFee = targetDj.liveSession?.serviceFee || 2.0;
+    const serviceFee = targetDj.liveSession?.serviceFee || 500;
     const totalAmount = amount + tip + serviceFee;
     const randomRefNum = Math.floor(1000 + Math.random() * 9000);
+    const refCode = paymentReference || `CMDJ-${randomRefNum}`;
 
     const newRequest: SongRequest = {
       id: `req-${Date.now()}`,
-      referenceCode: `CMDJ-${randomRefNum}`,
+      referenceCode: refCode,
       sessionId,
       djId: targetDj.id,
       djName: targetDj.name,
@@ -470,12 +627,33 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       paidVia: paymentMethod,
+      paymentReference: refCode,
+      paymentVerifiedServerSide,
     };
 
     const next = [newRequest, ...requests];
     saveRequests(next);
-    // Broadcast / persist to Supabase Realtime channel
+    // Broadcast / persist to Supabase Realtime channel + REST backend
     insertSongRequestToDb(newRequest).catch(() => {});
+    if (typeof window !== 'undefined') {
+      fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newRequest.id,
+          sessionId,
+          djId: targetDj.id,
+          song,
+          guestName: newRequest.guestName,
+          guestNote,
+          amount,
+          tip,
+          paidVia: paymentMethod,
+          paymentReference: refCode,
+          paymentVerifiedServerSide,
+        }),
+      }).catch(() => {});
+    }
     return newRequest;
   };
 
@@ -496,8 +674,15 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
       return req;
     });
     saveRequests(next);
-    // Sync status change to Supabase Realtime channel
+    // Sync status change to Supabase Realtime channel + REST API
     updateSongRequestStatusInDb(requestId, newStatus, reason).catch(() => {});
+    if (typeof window !== 'undefined') {
+      fetch(`/api/requests/${encodeURIComponent(requestId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus, declineReason: reason }),
+      }).catch(() => {});
+    }
   };
 
   const processRefund = (requestId: string, reason?: string) => {
@@ -515,8 +700,18 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
       return req;
     });
     saveRequests(next);
-    // Sync status change to Supabase Realtime channel
+    // Sync status change to Supabase Realtime channel + REST API
     updateSongRequestStatusInDb(requestId, 'refunded', reason).catch(() => {});
+    if (typeof window !== 'undefined') {
+      fetch(`/api/requests/${encodeURIComponent(requestId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'refunded',
+          declineReason: reason || 'Declined by DJ & refunded',
+        }),
+      }).catch(() => {});
+    }
   };
 
   const provideRequestFeedback = (
@@ -536,6 +731,16 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
       return req;
     });
     saveRequests(next);
+    if (typeof window !== 'undefined') {
+      fetch(`/api/requests/${encodeURIComponent(requestId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedbackGiven: feedback,
+          feedbackNote: note,
+        }),
+      }).catch(() => {});
+    }
   };
 
   const searchSongs = (query: string): Song[] => {
@@ -677,6 +882,10 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.setItem(STORAGE_KEY_GUEST_USER, JSON.stringify(ANONYMOUS_GUEST));
     } catch {}
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      supabase.auth.signOut().catch(() => {});
+    }
   };
 
   const loginAsDj = (djId = 'dj-kofi') => {
@@ -695,16 +904,96 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem(STORAGE_KEY_DJ_AUTH, 'false');
       localStorage.setItem(STORAGE_KEY_ROLE, 'guest');
     } catch {}
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      supabase.auth.signOut().catch(() => {});
+    }
+  };
+
+  const setActiveVenueId = (venueId: string) => {
+    setActiveVenueIdState(venueId);
+    try {
+      localStorage.setItem(STORAGE_KEY_ACTIVE_VENUE_ID, venueId);
+    } catch {}
+  };
+
+  const updateVenueSplit = (venueId: string, split: VenueCommissionSplit) => {
+    setVenues((prev) => {
+      const updated = prev.map((v) => (v.id === venueId ? { ...v, commissionSplit: split } : v));
+      try {
+        localStorage.setItem(STORAGE_KEY_VENUES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    if (typeof window !== 'undefined') {
+      fetch('/api/admin/venues/splits', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ venueId, commissionSplit: split }),
+      }).catch(() => {});
+    }
+  };
+
+  const addVenue = (venueData: Omit<ClubVenue, 'id' | 'totalRevenueGenerated' | 'totalCommissionPaid'>) => {
+    const newVenue: ClubVenue = {
+      ...venueData,
+      id: `venue-${Date.now()}`,
+      totalRevenueGenerated: 0,
+      totalCommissionPaid: 0,
+    };
+    setVenues((prev) => {
+      const updated = [newVenue, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEY_VENUES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    if (typeof window !== 'undefined') {
+      fetch('/api/venue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(venueData),
+      }).catch(() => {});
+    }
+  };
+
+  const resolveDispute = (disputeId: string, action: 'refund_guest' | 'release_to_dj', note?: string) => {
+    setDisputes((prev) => {
+      const updated = prev.map((d) => {
+        if (d.id !== disputeId) return d;
+        return {
+          ...d,
+          status: action === 'refund_guest' ? ('refunded' as const) : ('resolved_to_dj' as const),
+          resolvedAt: new Date().toISOString(),
+          resolutionNote: note || (action === 'refund_guest' ? 'Umpire forced full refund to guest.' : 'Dispute resolved in DJ favor; funds released.'),
+        };
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY_DISPUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    if (typeof window !== 'undefined') {
+      fetch(`/api/admin/disputes/${encodeURIComponent(disputeId)}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, resolutionNote: note }),
+      }).catch(() => {});
+    }
   };
 
   const resetDemoData = () => {
     setRequests([]);
     setDjs(MOCK_DJS);
     setDjLibrary([]);
+    setVenues(INITIAL_VENUES);
+    setDisputes(INITIAL_DISPUTES);
     try {
       localStorage.removeItem(STORAGE_KEY_REQUESTS);
       localStorage.removeItem(STORAGE_KEY_DJS);
       localStorage.removeItem(STORAGE_KEY_LIBRARY);
+      localStorage.removeItem(STORAGE_KEY_VENUES);
+      localStorage.removeItem(STORAGE_KEY_DISPUTES);
     } catch {}
   };
 
@@ -721,6 +1010,13 @@ export function CueAppProvider({ children }: { children: React.ReactNode }) {
         logoutDj,
         currentUser,
         walletTransactions,
+        venues,
+        activeVenue,
+        setActiveVenueId,
+        updateVenueSplit,
+        addVenue,
+        disputes,
+        resolveDispute,
         topUpGuestWallet,
         payWithWallet,
         registerOrUpdateGuest,

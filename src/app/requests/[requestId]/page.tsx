@@ -1,8 +1,9 @@
 'use client';
 
-import React, { use, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCueApp } from '@/context/CueAppContext';
+import { SongRequest } from '@/types';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import {
   ChevronLeft,
@@ -27,8 +28,80 @@ export default function RequestStatusPage({ params }: { params: Promise<{ reques
   const [feedbackNote, setFeedbackNote] = useState('');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'played_confirmed' | 'reported_problem'>('played_confirmed');
+  const [remoteRequest, setRemoteRequest] = useState<SongRequest | null>(null);
+  const [isVerifyingCallback, setIsVerifyingCallback] = useState(false);
 
-  const request = requests.find((r) => r.id === resolvedParams.requestId) || requests[0];
+  const localMatch = requests.find(
+    (r) =>
+      r.id === resolvedParams.requestId ||
+      r.referenceCode === resolvedParams.requestId ||
+      r.paymentReference === resolvedParams.requestId
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('trxref') || urlParams.get('reference');
+    const simulated = urlParams.get('simulated_payment') === 'true';
+
+    const verifyRef = refParam || (simulated ? resolvedParams.requestId : null);
+    if (verifyRef) {
+      let active = true;
+      queueMicrotask(() => {
+        if (active) setIsVerifyingCallback(true);
+      });
+      fetch(
+        `/api/paystack/verify?reference=${encodeURIComponent(verifyRef)}${
+          simulated ? '&simulated=true' : ''
+        }`
+      )
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (active && data?.request) {
+            setRemoteRequest(data.request as SongRequest);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (active) setIsVerifyingCallback(false);
+        });
+      return () => {
+        active = false;
+      };
+    } else if (!localMatch) {
+      fetch(`/api/requests/${encodeURIComponent(resolvedParams.requestId)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.request) setRemoteRequest(data.request as SongRequest);
+        })
+        .catch(() => {});
+    }
+  }, [resolvedParams.requestId, localMatch]);
+
+  const request = localMatch || remoteRequest || requests[0];
+
+  if (!request) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-8 pb-20">
+        <div className="bg-[#111722] border border-[#233044] rounded-3xl p-8 text-center space-y-3">
+          <p className="text-sm font-bold text-white">
+            {isVerifyingCallback ? 'Verifying Paystack Payment...' : 'Request Not Found'}
+          </p>
+          <p className="text-xs text-slate-400">
+            {isVerifyingCallback
+              ? 'Confirming transaction signature and queuing your track with the booth.'
+              : 'No matching song request was found for this reference.'}
+          </p>
+          <Link
+            href="/requests"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-bold"
+          >
+            Back to My Requests
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Timeline Steps
   const timelineSteps = [

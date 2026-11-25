@@ -9,11 +9,28 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({ children })
   const isWorkstation = pathname === '/dj/workstation';
   const isLogin = pathname === '/login';
   const isAdmin = pathname.startsWith('/admin');
+  const isVenue = pathname.startsWith('/venue');
   const isDJArea = pathname.startsWith('/dj');
 
-  if (isLogin || isAdmin) {
+  if (isAdmin) {
+    return (
+      <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#f8f9fb] text-zinc-900 font-sans">
+        {children}
+      </div>
+    );
+  }
+
+  if (isLogin) {
     return (
       <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#090b0e] text-white">
+        {children}
+      </div>
+    );
+  }
+
+  if (isVenue) {
+    return (
+      <div className="w-full min-h-[100dvh] flex flex-col relative bg-zinc-950 text-white max-w-[430px] mx-auto border-x border-zinc-800 shadow-2xl">
         {children}
       </div>
     );

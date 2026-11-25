@@ -27,7 +27,10 @@ import {
   Bluetooth,
   Radio,
   Sparkles,
-  QrCode
+  QrCode,
+  MapPin,
+  Loader2,
+  ArrowLeftRight
 } from 'lucide-react';
 import Link from 'next/link';
 import confetti from 'canvas-confetti';
@@ -54,10 +57,101 @@ export default function MobileSocialHomePage() {
   const [activePreviewSongId, setActivePreviewSongId] = useState<string | null>(null);
   const audioPreviewRef = React.useRef<HTMLAudioElement | null>(null);
 
-  // Proximity Detection simulation (BLE / Bluetooth Beacon in Venue)
-  const [nearbyDjDetected, setNearbyDjDetected] = useState<DJ | null>(currentDj || djs[0] || null);
-  const [isScanningBluetooth, setIsScanningBluetooth] = useState<boolean>(false);
+  // Real Booth Connection State (starts disconnected until scanned, searched, or selected via GPS)
+  const [connectedDj, setConnectedDj] = useState<DJ | null>(null);
   const [homeDjSearch, setHomeDjSearch] = useState<string>('');
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  // Real Browser GPS Nearby Lookup State
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [locationNotice, setLocationNotice] = useState<string | null>(null);
+  const [nearbyLiveDjs, setNearbyLiveDjs] = useState<DJ[]>([]);
+
+  // Restore last connected booth from sessionStorage if the guest already connected in this visit
+  useEffect(() => {
+    try {
+      const savedDjId = sessionStorage.getItem('cuemydj_connected_dj_id');
+      if (savedDjId) {
+        const match = djs.find((d) => d.id === savedDjId);
+        if (match) setConnectedDj(match);
+      }
+    } catch {}
+  }, [djs]);
+
+  const connectToDj = useCallback((dj: DJ, openDrawer = false) => {
+    setConnectedDj(dj);
+    setSearchError(null);
+    setLocationNotice(null);
+    setNearbyLiveDjs([]);
+    try {
+      sessionStorage.setItem('cuemydj_connected_dj_id', dj.id);
+    } catch {}
+    if (openDrawer) {
+      setActiveScannedDj(dj);
+      setShowScannerModal(false);
+    }
+  }, []);
+
+  const disconnectBooth = () => {
+    setConnectedDj(null);
+    setSearchError(null);
+    setLocationNotice(null);
+    try {
+      sessionStorage.removeItem('cuemydj_connected_dj_id');
+    } catch {}
+  };
+
+  // Real GPS lookup using browser Geolocation API + /api/sessions
+  const handleFindNearbyViaGps = () => {
+    setLocationNotice(null);
+    setSearchError(null);
+
+    if (typeof window === 'undefined' || !('geolocation' in navigator)) {
+      setLocationNotice('Location is not supported on this browser. Scan a QR code or search by handle.');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async () => {
+        try {
+          const res = await fetch('/api/sessions');
+          let liveList = djs.filter((d) => d.liveSession?.isAcceptingRequests);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data.sessions) && data.sessions.length > 0) {
+              const liveIds = new Set(
+                data.sessions
+                  .filter((s: { isAcceptingRequests?: boolean }) => s.isAcceptingRequests !== false)
+                  .map((s: { djId?: string }) => s.djId)
+              );
+              const matched = djs.filter((d) => liveIds.has(d.id));
+              if (matched.length > 0) liveList = matched;
+            }
+          }
+
+          if (liveList.length === 0) {
+            setLocationNotice('No On-Duty DJs found nearby right now. Try scanning a booth QR code.');
+          } else {
+            setNearbyLiveDjs(liveList);
+          }
+        } catch {
+          setLocationNotice('Could not check live booths right now. Try scanning a QR code.');
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (err) => {
+        setIsLocating(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocationNotice('Location access denied — scan a booth QR or search by DJ handle.');
+        } else {
+          setLocationNotice('Unable to determine your location. Scan a booth QR or search by handle.');
+        }
+      },
+      { enableHighAccuracy: false, timeout: 8000 }
+    );
+  };
 
   // Live Music Search API Integration (iTunes + YouTube)
   useEffect(() => {
@@ -168,22 +262,26 @@ export default function MobileSocialHomePage() {
 
       const normalizedQuery = trimmed.toLowerCase();
 
-      // Match by passcode, ID, handle, or DJ name
-      const foundDj =
-        djs.find(
-          (d) =>
-            d.liveSession?.passcode.toUpperCase() === candidateCode ||
-            d.id.toUpperCase() === candidateCode ||
-            d.handle.replace('@', '').toUpperCase() === candidateCode ||
-            d.name.toLowerCase().includes(normalizedQuery) ||
-            d.currentVenue.name.toLowerCase().includes(normalizedQuery)
-        ) || currentDj;
+      // Strictly match by passcode, ID, handle, DJ name, or venue name (no silent fake fallback)
+      const foundDj = djs.find(
+        (d) =>
+          d.liveSession?.passcode.toUpperCase() === candidateCode ||
+          d.id.toUpperCase() === candidateCode ||
+          d.handle.replace('@', '').toUpperCase() === candidateCode ||
+          d.name.toLowerCase().includes(normalizedQuery) ||
+          d.currentVenue.name.toLowerCase().includes(normalizedQuery)
+      );
 
-      setActiveScannedDj(foundDj);
-      setShowScannerModal(false);
+      if (!foundDj) {
+        setSearchError(`No live booth found for "${trimmed}". Check the handle or booth code.`);
+        return false;
+      }
+
+      connectToDj(foundDj, true);
       setManualCode('');
+      return true;
     },
-    [djs, currentDj]
+    [djs, connectToDj]
   );
 
   // Auto-open DJ Booth Profile when guest arrives from a physical QR link (/?booth=SKY99)
@@ -199,8 +297,7 @@ export default function MobileSocialHomePage() {
   }, [handleResolveCode]);
 
   const handleSimulateScan = (dj: DJ) => {
-    setActiveScannedDj(dj);
-    setShowScannerModal(false);
+    connectToDj(dj, true);
   };
 
   const handleSubmitRequest = (e: React.FormEvent) => {
@@ -261,12 +358,28 @@ export default function MobileSocialHomePage() {
               className="w-full h-full object-contain p-0.5"
             />
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-extrabold text-[17px] tracking-tight text-zinc-950 dark:text-white">QueMyDJ</span>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-[17px] tracking-tight text-zinc-950 dark:text-white leading-tight">QueMyDJ</span>
+            <span className="text-[9px] font-semibold tracking-wide text-zinc-400 dark:text-zinc-500 uppercase -mt-0.5">Powered by Zenbeatz</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Dark / Light Mode Selector */}
+          <button
+            type="button"
+            onClick={toggleThemeMode}
+            title={`Switch to ${themeMode === 'dark' ? 'Light' : 'Dark'} mode`}
+            aria-label="Toggle theme mode"
+            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200/80 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center transition-colors cursor-pointer border border-black/[0.04] dark:border-white/[0.06]"
+          >
+            {themeMode === 'light' ? (
+              <Moon className="w-4 h-4 text-indigo-600" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400" />
+            )}
+          </button>
+
           <Link
             href="/requests"
             aria-label="View notifications and requests"
@@ -283,147 +396,193 @@ export default function MobileSocialHomePage() {
 
       {/* MAIN CONTENT (Strict 20px / px-5 horizontal alignment) */}
       <main className="px-5 pt-4 pb-6 space-y-6">
-        {/* 2. CENTRAL CLUBBING & HARDWARE SCANNER CARD */}
-        <section className="relative overflow-hidden rounded-[24px] bg-zinc-950 text-white p-5 shadow-[0_12px_35px_rgba(0,0,0,0.22)] border border-white/[0.08]">
-          {/* Atmospheric Clubbing Backdrop */}
+        {/* 2. EDITORIAL 1:1 SQUARE HERO POSTER (Real Connection State + GPS Lookup) */}
+        <section className="relative w-full aspect-square rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 text-white flex flex-col justify-between p-5 shadow-[0_8px_30px_rgba(0,0,0,0.14)]">
+          {/* Full-bleed atmospheric club photography */}
           <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 pointer-events-none"
+            className="absolute inset-0 bg-cover bg-center scale-105 pointer-events-none"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop')`,
+              backgroundImage: `url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1600&auto=format&fit=crop')`,
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-[#061814]/85 to-[#040d0a]/95 pointer-events-none" />
-          
-          {/* Precision Architectural Speaker Driver (No Box, Matte Hardware Transducer) */}
-          <div className="absolute -right-8 -top-8 w-56 h-56 pointer-events-none select-none opacity-90">
-            <svg
-              viewBox="0 0 240 240"
-              className="w-full h-full animate-speaker-cone origin-center"
-              aria-hidden="true"
-            >
-              <defs>
-                <radialGradient id="matteCone" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#27272a" />
-                  <stop offset="55%" stopColor="#18181b" />
-                  <stop offset="100%" stopColor="#09090b" />
-                </radialGradient>
-                <radialGradient id="centerDome" cx="40%" cy="38%" r="60%">
-                  <stop offset="0%" stopColor="#3f3f46" />
-                  <stop offset="65%" stopColor="#18181b" />
-                  <stop offset="100%" stopColor="#09090b" />
-                </radialGradient>
-              </defs>
+          {/* Balanced top & bottom editorial vignette */}
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/75 via-zinc-950/25 to-zinc-950/95 pointer-events-none" />
 
-              <circle cx="120" cy="120" r="106" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1.5" />
-              <circle cx="120" cy="120" r="94" fill="url(#matteCone)" stroke="rgba(255,255,255,0.12)" strokeWidth="6" />
-              <circle cx="120" cy="120" r="76" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-              <circle cx="120" cy="120" r="60" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-              <circle cx="120" cy="120" r="44" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-              <circle cx="120" cy="120" r="28" fill="url(#centerDome)" stroke="rgba(16,185,129,0.45)" strokeWidth="1.5" />
-              <circle cx="120" cy="120" r="4" fill="#10b981" />
-            </svg>
-          </div>
-
-          <div className="relative z-10">
-            {/* Primary Copy */}
-            <div className="space-y-1.5 max-w-[245px]">
-              <h1 className="text-[22px] font-bold tracking-tight text-white leading-tight">
-                Connect to the DJ
-              </h1>
-              <p className="text-[13px] text-zinc-400 leading-relaxed">
-                Scan booth QR, search by DJ handle, or auto-connect via proximity.
-              </p>
-            </div>
-
-            {/* Direct Quick Search Input Bar on Hero Card */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (homeDjSearch.trim()) {
-                  handleResolveCode(homeDjSearch.trim());
-                  setHomeDjSearch('');
-                }
-              }}
-              className="mt-4 flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-xl p-1 border border-white/15"
-            >
-              <div className="flex-1 flex items-center pl-3 gap-2">
-                <Search className="w-4 h-4 text-zinc-400" />
-                <input
-                  type="text"
-                  value={homeDjSearch}
-                  onChange={(e) => setHomeDjSearch(e.target.value)}
-                  placeholder="DJ handle, name, or code..."
-                  className="w-full bg-transparent text-xs text-white placeholder:text-zinc-400 focus:outline-none"
-                />
+          {/* Top Bar */}
+          <div className="relative z-10 flex items-center justify-between gap-2">
+            {connectedDj ? (
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-950/65 backdrop-blur-md border border-white/15 text-[11px] font-mono uppercase tracking-wider text-zinc-100">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>Connected</span>
               </div>
+            ) : (
               <button
-                type="submit"
-                disabled={!homeDjSearch.trim()}
-                className="h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black text-xs font-bold transition-all cursor-pointer"
+                type="button"
+                disabled={isLocating}
+                onClick={handleFindNearbyViaGps}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-950/65 hover:bg-zinc-900/80 backdrop-blur-md border border-white/15 text-[11px] font-medium text-zinc-100 transition-colors cursor-pointer disabled:opacity-60"
               >
-                Find
+                {isLocating ? (
+                  <Loader2 className="w-3 h-3 animate-spin text-emerald-400" />
+                ) : (
+                  <MapPin className="w-3 h-3 text-emerald-400" />
+                )}
+                <span>{isLocating ? 'Locating...' : 'Find nearby'}</span>
               </button>
-            </form>
+            )}
 
-            {/* Primary Scan Button */}
-            <button
-              type="button"
-              onClick={() => setShowScannerModal(true)}
-              className="mt-3 w-full h-11 rounded-xl bg-white hover:bg-zinc-100 text-zinc-950 font-semibold text-[14px] flex items-center justify-center gap-2 shadow-sm active:scale-[0.99] transition-all cursor-pointer"
-            >
-              <Camera className="w-4 h-4 stroke-[2.25]" />
-              <span>Scan Booth QR Code</span>
-            </button>
-          </div>
-        </section>
-
-        {/* 2.5 PROXIMITY TRACKING CARD: AUTOMATICALLY DETECTS DJ IN THE BUILDING */}
-        {nearbyDjDetected && (
-          <section className="relative overflow-hidden rounded-2xl p-4 bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-zinc-900 border border-emerald-500/30 dark:border-emerald-500/20 shadow-md">
-            <div className="flex items-center justify-between mb-2.5">
-              <div className="flex items-center gap-2 text-xs font-bold text-white">
-                <div className="w-6 h-6 rounded-full bg-white/20 border border-white/20 flex items-center justify-center">
-                  <Bluetooth className="w-3.5 h-3.5 text-white animate-pulse" />
-                </div>
-                <span>DJ Detected in the Building</span>
-              </div>
-              <span className="text-[10px] font-semibold text-white bg-white/15 border border-white/25 px-2 py-0.5 rounded-full">
-                Nearby (~3m)
-              </span>
+            <div className="flex items-center gap-1.5">
+              {connectedDj && (
+                <button
+                  type="button"
+                  onClick={disconnectBooth}
+                  className="h-8 px-2.5 rounded-lg bg-zinc-950/65 hover:bg-zinc-900/85 backdrop-blur-md border border-white/15 text-zinc-200 text-[11.5px] font-medium whitespace-nowrap flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <ArrowLeftRight className="w-3 h-3" />
+                  <span>Switch</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowScannerModal(true)}
+                className="h-8 px-3 rounded-lg bg-white text-zinc-950 hover:bg-zinc-200 text-[12px] font-semibold whitespace-nowrap flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Scan QR</span>
+              </button>
             </div>
+          </div>
 
-            <div
-              onClick={() => handleSimulateScan(nearbyDjDetected)}
-              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white dark:bg-zinc-800/90 border border-black/[0.06] dark:border-zinc-700/60 shadow-xs cursor-pointer hover:border-emerald-500/50 transition-all active:scale-[0.99]"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <img
-                  src={nearbyDjDetected.avatarUrl}
-                  alt={nearbyDjDetected.name}
-                  className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-500/40 flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-bold text-zinc-950 dark:text-white truncate">
-                      {nearbyDjDetected.name}
-                    </span>
-                    <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {nearbyDjDetected.handle}
-                    </span>
+          {/* Bottom Anchor */}
+          <div className="relative z-10 space-y-3.5">
+            {connectedDj ? (
+              <div className="space-y-3.5">
+                <div
+                  onClick={() => handleSimulateScan(connectedDj)}
+                  className="flex items-center gap-3.5 cursor-pointer group"
+                >
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/25 shrink-0 bg-zinc-900">
+                    <img
+                      src={connectedDj.avatarUrl}
+                      alt={connectedDj.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-                    {nearbyDjDetected.currentVenue.name} &bull; <span className="text-emerald-600 dark:text-emerald-400 font-semibold">₦{(nearbyDjDetected.liveSession?.basePrice || 5000).toLocaleString()}/track</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 truncate">
+                      {connectedDj.currentVenue.name}
+                    </div>
+                    <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-white leading-tight truncate mt-0.5">
+                      {connectedDj.name}
+                    </h1>
+                    <p className="text-[12px] text-zinc-300 truncate mt-0.5">
+                      From ₦{(connectedDj.liveSession?.basePrice || 5000).toLocaleString()}/track · {connectedDj.handle}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSimulateScan(connectedDj)}
+                  className="w-full h-10 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-[13px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <span>Request a Song</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-white leading-tight">
+                    Connect to a Booth
+                  </h1>
+                  <p className="text-[12.5px] text-zinc-300 mt-1 leading-relaxed">
+                    Scan the DJ&apos;s booth QR, enter their handle, or use location to see who&apos;s On Duty.
                   </p>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-xs flex-shrink-0">
-                <span>View Booth</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                {/* Live Nearby DJs (only shown after user explicitly taps "Find nearby" and grants GPS) */}
+                {nearbyLiveDjs.length > 0 && (
+                  <div className="space-y-1.5 max-h-28 overflow-y-auto pr-0.5">
+                    {nearbyLiveDjs.map((dj) => (
+                      <button
+                        key={dj.id}
+                        type="button"
+                        onClick={() => connectToDj(dj, true)}
+                        className="w-full p-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 flex items-center justify-between gap-2.5 text-left transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={dj.avatarUrl}
+                            alt={dj.name}
+                            className="w-8 h-8 rounded-full object-cover shrink-0 border border-white/20"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-[12.5px] font-semibold text-white truncate">
+                              {dj.name}
+                            </div>
+                            <div className="text-[11px] text-zinc-300 truncate">
+                              {dj.currentVenue.name} · ₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-zinc-300 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {locationNotice && (
+                  <p className="text-[11.5px] text-amber-300 leading-snug">
+                    {locationNotice}
+                  </p>
+                )}
+
+                {/* Direct DJ Search Bar */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setSearchError(null);
+                    if (homeDjSearch.trim()) {
+                      handleResolveCode(homeDjSearch.trim());
+                      setHomeDjSearch('');
+                    }
+                  }}
+                  className="pt-2.5 border-t border-white/15 space-y-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2 h-9 px-3 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 focus-within:border-white/35 transition-colors">
+                      <Search className="w-3.5 h-3.5 text-zinc-300 shrink-0" />
+                      <input
+                        type="text"
+                        value={homeDjSearch}
+                        onChange={(e) => {
+                          setHomeDjSearch(e.target.value);
+                          if (searchError) setSearchError(null);
+                        }}
+                        placeholder="DJ handle, name, or booth code..."
+                        className="w-full bg-transparent text-[12.5px] text-white placeholder:text-zinc-400 focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!homeDjSearch.trim()}
+                      className="h-9 px-3.5 rounded-lg bg-white text-zinc-950 hover:bg-zinc-200 disabled:opacity-40 text-[12px] font-semibold transition-colors cursor-pointer shrink-0"
+                    >
+                      Find
+                    </button>
+                  </div>
+
+                  {searchError && (
+                    <p className="text-[11.5px] text-rose-300 leading-snug">
+                      {searchError}
+                    </p>
+                  )}
+                </form>
               </div>
-            </div>
-          </section>
-        )}
+            )}
+          </div>
+        </section>
 
         {/* 3. YOUR SONG REQUESTS (Clean iOS Grouped Section & Single-Surface Cards) */}
         <section id="your-requests-section" className="space-y-3.5 scroll-mt-20">
@@ -616,82 +775,109 @@ export default function MobileSocialHomePage() {
       </main>
 
       {/* 4. NATIVE VAUL SHEET: QR CAMERA SCANNER & PASSCODE ENTRY */}
-      <Drawer.Root open={showScannerModal} onOpenChange={setShowScannerModal}>
+      <Drawer.Root
+        open={showScannerModal}
+        onOpenChange={(open) => {
+          setShowScannerModal(open);
+          if (!open) setSearchError(null);
+        }}
+      >
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity" />
           <Drawer.Content
             aria-labelledby="scanner-sheet-title"
-            className="bg-white dark:bg-[#0c0d12] text-zinc-950 dark:text-zinc-100 border-t border-transparent dark:border-zinc-800 flex flex-col rounded-t-[28px] max-h-[88dvh] fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 focus:outline-none shadow-2xl"
+            className="bg-white dark:bg-[#0c0d12] text-zinc-950 dark:text-zinc-100 border-t border-transparent dark:border-zinc-800 flex flex-col rounded-t-[28px] max-h-[90dvh] fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 focus:outline-none shadow-2xl overflow-hidden"
           >
-            <div className="pt-3 pb-1 flex justify-center">
-              <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
-            </div>
-
-            <div className="p-5 pb-8 space-y-5 overflow-y-auto">
-              <div className="flex items-center justify-between">
+            {/* Fixed Non-Scrolling Header (Prevents Clipping) */}
+            <div className="shrink-0 px-5 pt-3 pb-3.5 border-b border-zinc-100 dark:border-zinc-800/80">
+              <div className="flex justify-center mb-3">
+                <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between gap-3">
                 <div>
                   <Drawer.Title
                     id="scanner-sheet-title"
-                    className="text-[18px] font-bold tracking-tight text-zinc-950 dark:text-white"
+                    className="text-[17px] font-semibold tracking-tight text-zinc-950 dark:text-white leading-snug"
                   >
                     Connect to Booth
                   </Drawer.Title>
-                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
-                    Scan the QR to connect to the DJ
+                  <p className="text-[12.5px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    Scan the booth QR or select an On-Duty DJ
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowScannerModal(false)}
                   aria-label="Close scanner"
-                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
+            </div>
 
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-5 pb-8 space-y-5">
               {/* Live WebRTC Camera QR Scanner */}
               <LiveQrCameraScanner onScanSuccess={handleResolveCode} />
 
-              {/* Quick Demo Venue Selector */}
+              {/* Inline Scan / Code Error Feedback */}
+              {searchError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[12px] text-rose-600 dark:text-rose-400 font-medium">
+                  {searchError}
+                </div>
+              )}
+
+              {/* Real On-Duty DJs from Supabase */}
               <div className="space-y-2">
                 <span className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400 block">
-                  Live resident DJs performing tonight (Tap to view booth)
+                  On-Duty DJs live right now
                 </span>
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl border border-black/[0.07] dark:border-zinc-800 overflow-hidden">
-                  {djs.slice(0, 3).map((dj) => (
-                    <button
-                      key={dj.id}
-                      type="button"
-                      onClick={() => handleSimulateScan(dj)}
-                      className="w-full p-3.5 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 flex items-center justify-between text-left transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={dj.avatarUrl}
-                          alt={dj.name}
-                          className="w-11 h-11 rounded-xl object-cover ring-1 ring-black/5 dark:ring-white/10"
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[14px] font-semibold text-zinc-900 dark:text-white truncate">
-                              {dj.name}
-                            </span>
-                            <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
-                              {dj.handle}
-                            </span>
+                {djs.filter((dj) => dj.liveSession?.isAcceptingRequests).length === 0 ? (
+                  <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center text-[12.5px] text-zinc-500 dark:text-zinc-400">
+                    No DJs are currently On Duty. Enter a booth passcode below to connect.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl border border-black/[0.07] dark:border-zinc-800 overflow-hidden">
+                    {djs
+                      .filter((dj) => dj.liveSession?.isAcceptingRequests)
+                      .map((dj) => (
+                        <button
+                          key={dj.id}
+                          type="button"
+                          onClick={() => handleSimulateScan(dj)}
+                          className="w-full p-3.5 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <img
+                              src={dj.avatarUrl}
+                              alt={dj.name}
+                              className="w-11 h-11 rounded-xl object-cover ring-1 ring-black/5 dark:ring-white/10 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[14px] font-semibold text-zinc-900 dark:text-white truncate">
+                                  {dj.name}
+                                </span>
+                                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium truncate">
+                                  {dj.handle}
+                                </span>
+                              </div>
+                              <div className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                {dj.currentVenue.name} &bull;{' '}
+                                <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+                                  ₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}/track
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-                            {dj.currentVenue.name} &bull; <span className="text-emerald-700 dark:text-emerald-400 font-medium">₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}/track</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
-                        {dj.liveSession?.passcode || 'LIVE'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                          <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg shrink-0">
+                            {dj.liveSession?.passcode || 'LIVE'}
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* Manual Search & DJ Name / Handle / Passcode Entry */}
@@ -702,6 +888,7 @@ export default function MobileSocialHomePage() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
+                    setSearchError(null);
                     handleResolveCode(manualCode);
                   }}
                   className="flex gap-2"
@@ -709,8 +896,11 @@ export default function MobileSocialHomePage() {
                   <input
                     type="text"
                     value={manualCode}
-                    onChange={(e) => setManualCode(e.target.value)}
-                    placeholder="DJ name, @handle or code (e.g. DJ Kofi, SKY99)"
+                    onChange={(e) => {
+                      setManualCode(e.target.value);
+                      if (searchError) setSearchError(null);
+                    }}
+                    placeholder="DJ name, @handle or passcode"
                     className="flex-1 h-11 px-3.5 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-[14px] text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white transition-all"
                   />
                   <button
@@ -805,7 +995,7 @@ export default function MobileSocialHomePage() {
                   {/* Genres Played Tonight */}
                   <div className="pt-1 space-y-1.5">
                     <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block">
-                      Genres in Tonight's Rotation:
+                      Genres in Tonight&apos;s Rotation:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {activeScannedDj.genres.map((g) => (

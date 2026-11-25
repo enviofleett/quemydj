@@ -26,9 +26,14 @@ export const Header: React.FC = () => {
               className="object-contain p-0.5"
             />
           </div>
-          <span className="font-extrabold text-lg tracking-tight text-gray-900 group-hover:text-emerald-600 transition-colors">
-            QueMyDJ
-          </span>
+          <div className="flex flex-col">
+            <span className="font-extrabold text-lg tracking-tight text-gray-900 group-hover:text-emerald-600 transition-colors leading-tight">
+              QueMyDJ
+            </span>
+            <span className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider -mt-0.5">
+              Powered by Zenbeatz
+            </span>
+          </div>
         </Link>
 
         {/* Navigation links */}

@@ -31,6 +31,7 @@ export default function GuestProfilePage() {
     registerOrUpdateGuest,
     logoutGuest,
     themeMode,
+    setThemeMode,
     toggleThemeMode,
   } = useCueApp();
 
@@ -45,16 +46,17 @@ export default function GuestProfilePage() {
   const [notifyOnPlay, setNotifyOnPlay] = useState(true);
   const [activeLegalModal, setActiveLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
-  const joinedDate = React.useMemo(() => {
+  const formatJoinedDate = (createdAt?: string) => {
     try {
-      if (!currentUser?.createdAt) return 'March 2026';
-      const d = new Date(currentUser.createdAt);
+      if (!createdAt) return 'March 2026';
+      const d = new Date(createdAt);
       if (isNaN(d.getTime())) return 'March 2026';
       return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     } catch {
       return 'March 2026';
     }
-  }, [currentUser?.createdAt]);
+  };
+  const joinedDate = formatJoinedDate(currentUser?.createdAt);
 
   // If user is not registered, they cannot have a profile page
   if (!currentUser?.isRegistered) {
@@ -105,15 +107,51 @@ export default function GuestProfilePage() {
     setTimeout(() => setSaveSuccessMsg(null), 3000);
   };
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError(null);
     if (!newPassword.trim()) return;
 
-    setIsChangingPassword(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setSaveSuccessMsg('Password changed successfully.');
-    setTimeout(() => setSaveSuccessMsg(null), 3000);
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters long.');
+      return;
+    }
+
+    const emailToUse = currentUser?.phoneOrEmail?.includes('@')
+      ? currentUser.phoneOrEmail
+      : `${currentUser?.id || 'guest'}@quemydj.local`;
+
+    setIsUpdatingPassword(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailToUse,
+          currentPassword,
+          newPassword,
+          userType: 'user',
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsChangingPassword(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setSaveSuccessMsg('Password updated successfully.');
+        setTimeout(() => setSaveSuccessMsg(null), 3000);
+      } else {
+        setPasswordError(data?.error || 'Failed to update password.');
+      }
+    } catch {
+      setPasswordError('Network error updating password.');
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   return (
@@ -330,6 +368,13 @@ export default function GuestProfilePage() {
           <h3 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
             Change Password
           </h3>
+
+          {passwordError && (
+            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+              {passwordError}
+            </p>
+          )}
+
           <div>
             <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-1">
               Current Password
@@ -345,12 +390,12 @@ export default function GuestProfilePage() {
 
           <div>
             <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block mb-1">
-              New Password
+              New Password (min 8 characters)
             </label>
             <input
               type="password"
               required
-              placeholder="At least 6 characters"
+              placeholder="••••••••••••"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className="w-full h-10 px-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-950 dark:focus:border-white"
@@ -367,9 +412,10 @@ export default function GuestProfilePage() {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold"
+              disabled={isUpdatingPassword}
+              className="px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5"
             >
-              Update Password
+              {isUpdatingPassword ? <span>Updating...</span> : <span>Update Password</span>}
             </button>
           </div>
         </form>
@@ -378,8 +424,58 @@ export default function GuestProfilePage() {
       {/* 4. Settings Grouped List */}
       <div className="px-5 mt-5 space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400 px-1">
-          Account Settings
+          Preferences &amp; Settings
         </h2>
+
+        {/* Appearance Mode Choice: Dark vs Light */}
+        <div className="rounded-2xl border border-black/[0.07] dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center">
+                {themeMode === 'dark' ? <Moon className="w-4 h-4 text-indigo-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+              </div>
+              <div>
+                <span className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100 block">
+                  Appearance
+                </span>
+                <span className="text-[12px] text-zinc-400">
+                  Select your preferred interface theme
+                </span>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+              {themeMode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setThemeMode('light')}
+              className={`py-2.5 px-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                themeMode === 'light'
+                  ? 'bg-zinc-950 text-white border-zinc-950 shadow-sm'
+                  : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:text-zinc-950 dark:hover:text-white'
+              }`}
+            >
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span>Light Mode</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setThemeMode('dark')}
+              className={`py-2.5 px-3 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                themeMode === 'dark'
+                  ? 'bg-emerald-400 text-zinc-950 border-emerald-400 shadow-sm shadow-emerald-400/20'
+                  : 'bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:text-zinc-950 dark:hover:text-white'
+              }`}
+            >
+              <Moon className="w-4 h-4 text-indigo-400" />
+              <span>Dark Mode</span>
+            </button>
+          </div>
+        </div>
 
         <div className="rounded-2xl border border-black/[0.07] dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800/80 overflow-hidden shadow-xs">
           {/* Change Password Row */}

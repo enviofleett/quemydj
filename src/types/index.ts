@@ -53,6 +53,7 @@ export interface Song {
   audioMetadata?: AudioMetadata;
   audioFile?: File; // Local imported file if available
   waveformPeaks?: number[]; // Normalized waveform peak array
+  isFullLength?: boolean;
 }
 
 export interface DJ {
@@ -66,6 +67,8 @@ export interface DJ {
   rating: number;
   totalSets: number;
   instagram?: string;
+  paystackSubaccountCode?: string;
+  paystackRecipientCode?: string;
   currentVenue: {
     name: string;
     city: string;
@@ -111,8 +114,13 @@ export interface SongRequest {
   refundedAt?: string;
   feedbackGiven?: 'played_confirmed' | 'reported_problem';
   feedbackNote?: string;
-  paidVia: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet';
+  paidVia: 'Apple Pay' | 'Credit Card' | 'Cash App' | 'Demo Wallet' | 'Paystack';
   paymentVerifiedServerSide?: boolean;
+  paymentReference?: string;
+  venueId?: string;
+  currency?: string;
+  settledAt?: string;
+  settlementId?: string;
 }
 
 export type QueueRecommendationMatch = 'Excellent Match' | 'Good Match' | 'Possible Transition' | 'Requires DJ Review';
@@ -164,9 +172,24 @@ export interface AuthSession {
 
 export interface WalletTransaction {
   id: string;
-  type: 'topup' | 'request_payment' | 'refund';
+  type:
+    | 'topup'
+    | 'request_payment'
+    | 'refund'
+    | 'venue_settlement'
+    | 'dj_settlement'
+    | 'platform_fee'
+    | 'escrow_release';
   amount: number;
   description: string;
   createdAt: string;
   reference: string;
+  direction?: 'credit' | 'debit';
+  status?: 'pending' | 'completed' | 'failed' | 'reversed';
+  venueId?: string;
+  djId?: string;
+  requestId?: string;
 }
+
+export * from './admin';
+

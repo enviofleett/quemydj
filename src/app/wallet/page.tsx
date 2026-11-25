@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCueApp } from '@/context/CueAppContext';
 import {
   Wallet,
@@ -15,12 +15,14 @@ import {
   ChevronLeft,
   ArrowRight,
   Lock,
-  Sparkles
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function WalletPage() {
+function WalletContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     currentUser,
     walletTransactions,
@@ -29,7 +31,60 @@ export default function WalletPage() {
 
   const [topUpAmount, setTopUpAmount] = useState<number>(20000);
   const [isToppingUp, setIsToppingUp] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [topUpSuccess, setTopUpSuccess] = useState(false);
+  const [statusNotice, setStatusNotice] = useState<string | null>(null);
+  const [verifiedRefs, setVerifiedRefs] = useState<Set<string>>(new Set());
+
+  // Handle return callback from Paystack (e.g. ?reference=WAL-... or ?trxref=WAL-...)
+  const handleVerifyCallback = useCallback(
+    async (ref: string) => {
+      if (verifiedRefs.has(ref)) return;
+      setIsToppingUp(true);
+      setStatusNotice('Verifying your Paystack payment...');
+      setErrorMessage(null);
+
+      try {
+        const res = await fetch(`/api/paystack/verify?reference=${encodeURIComponent(ref)}`);
+        const data = await res.json().catch(() => null);
+
+        if (res.ok && data?.verified) {
+          const creditedAmount = typeof data.amount === 'number' ? data.amount : topUpAmount;
+          topUpGuestWallet(creditedAmount, `Paystack Top-Up (${ref})`);
+          setVerifiedRefs((prev) => new Set([...prev, ref]));
+          setTopUpSuccess(true);
+          setStatusNotice(`Successfully credited ₦${creditedAmount.toLocaleString()} to your wallet!`);
+
+          try {
+            confetti({
+              particleCount: 80,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#10b981', '#34d399', '#06b6d4', '#f59e0b', '#ffffff'],
+            });
+          } catch {}
+
+          // Clean query params from URL without refreshing
+          router.replace('/wallet');
+        } else {
+          setErrorMessage(data?.message || 'Payment verification could not be completed.');
+        }
+      } catch (err) {
+        console.error('Wallet callback verification error:', err);
+        setErrorMessage('Network error verifying transaction with Paystack.');
+      } finally {
+        setIsToppingUp(false);
+      }
+    },
+    [router, topUpGuestWallet, topUpAmount, verifiedRefs]
+  );
+
+  useEffect(() => {
+    const ref = searchParams?.get('reference') || searchParams?.get('trxref');
+    if (ref && !verifiedRefs.has(ref)) {
+      handleVerifyCallback(ref);
+    }
+  }, [searchParams, handleVerifyCallback, verifiedRefs]);
 
   // If user is not registered, encourage account creation
   if (!currentUser?.isRegistered) {
@@ -70,26 +125,83 @@ export default function WalletPage() {
     );
   }
 
-  const handleTopUp = (amountToCharge: number) => {
+  // Live Paystack Checkout Top-Up
+  const handleTopUp = async (amountToCharge: number) => {
+    if (isToppingUp || amountToCharge <= 0) return;
     setIsToppingUp(true);
     setTopUpSuccess(false);
+    setErrorMessage(null);
+    setStatusNotice('Initializing Paystack secure checkout...');
 
-    setTimeout(() => {
-      topUpGuestWallet(amountToCharge, 'Simulated Paystack Club Top-Up');
+    try {
+      const customerEmail =
+        currentUser.phoneOrEmail && currentUser.phoneOrEmail.includes('@')
+          ? currentUser.phoneOrEmail.trim()
+          : `${currentUser.name.replace(/\s+/g, '').toLowerCase() || 'guest'}@cuemydj.com`;
+
+      const res = await fetch('/api/paystack/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: customerEmail,
+          amount: amountToCharge,
+          type: 'wallet_topup',
+          guestName: currentUser.name || 'Guest User',
+          currency: 'NGN',
+          callbackUrl: `${window.location.origin}/wallet`,
+        }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.reference) {
+        setErrorMessage(data?.error || data?.message || 'Failed to initialize Paystack checkout.');
+        setIsToppingUp(false);
+        setStatusNotice(null);
+        return;
+      }
+
+      // If live or test Paystack gateway returned authorization_url, redirect user to checkout
+      if (data.simulated === false && data.authorization_url && data.authorization_url.startsWith('http')) {
+        setStatusNotice('Redirecting to Paystack secure checkout...');
+        window.location.href = data.authorization_url;
+        return;
+      }
+
+      // If in test/simulation mode fallback, verify automatically
+      setStatusNotice('Verifying payment reference...');
+      const verifyRes = await fetch(
+        `/api/paystack/verify?reference=${encodeURIComponent(data.reference)}&simulated=true`
+      );
+      const verifyData = await verifyRes.json().catch(() => null);
+
+      if (verifyRes.ok && verifyData?.verified) {
+        topUpGuestWallet(amountToCharge, `Paystack Top-Up (${data.reference})`);
+        setTopUpSuccess(true);
+        setStatusNotice(`₦${amountToCharge.toLocaleString()} added to your wallet!`);
+
+        try {
+          confetti({
+            particleCount: 65,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: ['#10b981', '#34d399', '#f59e0b', '#ffffff'],
+          });
+        } catch {}
+
+        setTimeout(() => {
+          setTopUpSuccess(false);
+          setStatusNotice(null);
+        }, 5000);
+      } else {
+        setErrorMessage(verifyData?.message || 'Verification failed. Please contact support.');
+      }
+    } catch (err) {
+      console.error('Wallet top-up error:', err);
+      setErrorMessage('A network error occurred while contacting Paystack.');
+    } finally {
       setIsToppingUp(false);
-      setTopUpSuccess(true);
-
-      try {
-        confetti({
-          particleCount: 65,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#10b981', '#34d399', '#f59e0b', '#ffffff'],
-        });
-      } catch {}
-
-      setTimeout(() => setTopUpSuccess(false), 4000);
-    }, 500);
+    }
   };
 
   return (
@@ -120,7 +232,6 @@ export default function WalletPage() {
               viewBox="0 0 200 200"
               fill="none"
             >
-              {/* Concentric turntable grooves */}
               <circle cx="100" cy="100" r="96" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
               <circle cx="100" cy="100" r="88" stroke="currentColor" strokeWidth="0.6" />
               <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="0.8" strokeDasharray="6 3" />
@@ -129,13 +240,12 @@ export default function WalletPage() {
               <circle cx="100" cy="100" r="56" stroke="currentColor" strokeWidth="0.5" />
               <circle cx="100" cy="100" r="48" stroke="currentColor" strokeWidth="0.6" strokeDasharray="8 3" />
               <circle cx="100" cy="100" r="40" stroke="currentColor" strokeWidth="0.5" />
-              {/* Center vinyl label & spindle */}
               <circle cx="100" cy="100" r="30" stroke="currentColor" strokeWidth="1" className="fill-emerald-400/[0.04]" />
               <circle cx="100" cy="100" r="12" stroke="currentColor" strokeWidth="0.75" strokeDasharray="2 2" />
               <circle cx="100" cy="100" r="4" fill="currentColor" />
             </svg>
 
-            {/* Club Soundwave / Audio Equalizer Frequencies (Across Bottom) */}
+            {/* Club Soundwave / Audio Equalizer Frequencies */}
             <svg
               className="absolute bottom-1 left-0 right-0 w-full h-16 text-emerald-400/[0.06]"
               viewBox="0 0 320 60"
@@ -210,10 +320,10 @@ export default function WalletPage() {
               </p>
             </div>
 
-            {/* Quick Top-up buttons */}
+            {/* Quick Top-up selection */}
             <div className="pt-2 space-y-2">
               <span className="text-[11px] font-semibold text-slate-300 block">
-                Quick Top-Up (Paystack Sim)
+                Top-Up via Paystack
               </span>
 
               <div className="grid grid-cols-3 gap-2">
@@ -239,7 +349,10 @@ export default function WalletPage() {
                 className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-400 hover:brightness-105 active:scale-[0.99] text-black font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isToppingUp ? (
-                  <span>Adding Funds...</span>
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-black" />
+                    <span>Connecting Paystack...</span>
+                  </span>
                 ) : (
                   <>
                     <PlusCircle className="w-4 h-4" />
@@ -249,10 +362,25 @@ export default function WalletPage() {
               </button>
             </div>
 
+            {/* Feedback & Error banners */}
+            {statusNotice && !errorMessage && !topUpSuccess && (
+              <div className="p-3 rounded-xl bg-blue-950/70 border border-blue-800 text-xs text-blue-200 flex items-center gap-2">
+                <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0" />
+                <span>{statusNotice}</span>
+              </div>
+            )}
+
             {topUpSuccess && (
               <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-800 text-xs text-emerald-200 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                <span>Wallet successfully topped up!</span>
+                <span>{statusNotice || 'Wallet successfully topped up!'}</span>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-800 text-xs text-rose-200 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
           </div>
@@ -328,5 +456,19 @@ export default function WalletPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[100dvh] bg-white dark:bg-[#090a0d] text-zinc-400 text-xs">
+          Loading Wallet...
+        </div>
+      }
+    >
+      <WalletContent />
+    </Suspense>
   );
 }

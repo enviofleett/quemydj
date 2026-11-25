@@ -104,9 +104,14 @@ export const DJNav: React.FC = () => {
                   className="object-contain p-0.5"
                 />
               </div>
-              <span className="font-black text-lg text-zinc-950 dark:text-white tracking-tight">
-                QueMyDJ
-              </span>
+              <div className="flex flex-col">
+                <span className="font-black text-lg text-zinc-950 dark:text-white tracking-tight leading-tight">
+                  QueMyDJ
+                </span>
+                <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider -mt-0.5">
+                  Powered by Zenbeatz
+                </span>
+              </div>
             </Link>
             <div className="h-5 w-px bg-zinc-200 dark:bg-[#1e293b]" />
             <div>

@@ -118,9 +118,14 @@ export const GuestNav: React.FC = () => {
                 className="object-contain p-0.5"
               />
             </div>
-            <span className="font-black text-lg text-white tracking-tight group-hover:text-emerald-400 transition-colors">
-              QueMyDJ
-            </span>
+            <div className="flex flex-col">
+              <span className="font-black text-lg text-white tracking-tight group-hover:text-emerald-400 transition-colors leading-tight">
+                QueMyDJ
+              </span>
+              <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider -mt-0.5">
+                Powered by Zenbeatz
+              </span>
+            </div>
           </Link>
 
           <nav className="flex items-center gap-1">

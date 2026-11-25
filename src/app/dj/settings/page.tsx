@@ -12,7 +12,8 @@ import {
   ArrowLeft,
   X,
   Sun,
-  Moon
+  Moon,
+  KeyRound
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -377,7 +378,137 @@ export default function DJSettingsMobilePage() {
           Save All Changes
         </button>
       </form>
+
+      {/* 3. DJ SECURITY & PASSWORD MANAGEMENT */}
+      <section className="rounded-2xl border border-black/[0.07] p-5 space-y-4 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <div className="flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-zinc-700" />
+          <h2 className="text-[15px] font-semibold text-zinc-900">
+            Account Security &amp; Password
+          </h2>
+        </div>
+        <p className="text-[12px] text-zinc-500 leading-relaxed">
+          Update the password used to access your resident DJ workstation and booth management tools.
+        </p>
+
+        <DjPasswordChangeForm djId={currentDj.id} djEmail={`${currentDj.handle.replace('@', '')}@quemydj.com`} />
+      </section>
       </main>
     </div>
+  );
+}
+
+function DjPasswordChangeForm({ djId, djEmail }: { djId: string; djEmail: string }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMsg(null);
+
+    if (newPassword.length < 8) {
+      setStatus('error');
+      setMsg('New password must be at least 8 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setStatus('error');
+      setMsg('Passwords do not match.');
+      return;
+    }
+
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: djEmail,
+          currentPassword,
+          newPassword,
+          userType: 'dj',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setStatus('success');
+        setMsg('DJ account password updated successfully.');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setStatus('idle'), 4000);
+      } else {
+        setStatus('error');
+        setMsg(data?.error || 'Failed to update password.');
+      }
+    } catch {
+      setStatus('error');
+      setMsg('Network error updating password.');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-3 pt-1">
+      {status === 'success' && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+          <span>{msg}</span>
+        </div>
+      )}
+      {status === 'error' && (
+        <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs">
+          {msg}
+        </div>
+      )}
+
+      <div>
+        <label className="text-[11px] font-medium text-zinc-600 block mb-1">Current Password</label>
+        <input
+          type="password"
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          placeholder="••••••••••••"
+          className="w-full h-10 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-[11px] font-medium text-zinc-600 block mb-1">New Password (min 8 chars)</label>
+          <input
+            type="password"
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="••••••••••••"
+            className="w-full h-10 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          />
+        </div>
+        <div>
+          <label className="text-[11px] font-medium text-zinc-600 block mb-1">Confirm New Password</label>
+          <input
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="••••••••••••"
+            className="w-full h-10 px-3 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end pt-1">
+        <button
+          type="submit"
+          disabled={status === 'loading'}
+          className="px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl text-xs font-semibold disabled:opacity-50 transition-colors shadow-xs"
+        >
+          {status === 'loading' ? 'Updating...' : 'Update DJ Password'}
+        </button>
+      </div>
+    </form>
   );
 }

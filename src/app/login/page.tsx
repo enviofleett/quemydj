@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCueApp } from '@/context/CueAppContext';
+import { getSupabaseClient } from '@/services/supabaseClient';
 import {
   ArrowLeft,
   ArrowRight,
@@ -70,7 +71,7 @@ export default function LoginPage() {
   const clubImage =
     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1600&auto=format&fit=crop';
 
-  const handleGuestSubmit = (e: React.FormEvent) => {
+  const handleGuestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -82,29 +83,188 @@ export default function LoginPage() {
       setErrorMessage('Please enter your email or phone number');
       return;
     }
+    if (authTab === 'signup' && password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters');
+      return;
+    }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const finalName =
-        authTab === 'signup'
-          ? name.trim()
-          : name.trim() || emailOrPhone.split('@')[0] || 'Guest';
+    const emailVal = emailOrPhone.trim();
+    const isEmail = emailVal.includes('@');
+    const finalName = authTab === 'signup'
+      ? name.trim()
+      : name.trim() || (isEmail ? emailVal.split('@')[0] : 'Guest');
 
-      registerOrUpdateGuest(finalName, emailOrPhone.trim());
+    const supabase = getSupabaseClient();
+
+    if (authTab === 'signup') {
+      if (isEmail && supabase) {
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: emailVal,
+              password,
+              name: finalName,
+              role: 'guest',
+            }),
+          });
+          const result = await res.json();
+          if (!res.ok) {
+            setErrorMessage(result.error || 'Failed to create guest account');
+            setIsSubmitting(false);
+            return;
+          }
+
+          // Sign in user directly with confirmed credentials
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: emailVal,
+            password,
+          });
+
+          if (signInError) {
+            setErrorMessage(signInError.message);
+            setIsSubmitting(false);
+            return;
+          }
+        } catch (err: any) {
+          setErrorMessage(err?.message || 'Registration failed');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      registerOrUpdateGuest(finalName, emailVal);
       setIsSubmitting(false);
       router.push('/profile');
-    }, 400);
+    } else {
+      // Login
+      if (isEmail && supabase) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: emailVal,
+            password,
+          });
+
+          if (error) {
+            setErrorMessage(error.message);
+            setIsSubmitting(false);
+            return;
+          }
+
+          const loggedInName = data.user?.user_metadata?.name || finalName;
+          registerOrUpdateGuest(loggedInName, emailVal);
+          setIsSubmitting(false);
+          router.push('/profile');
+          return;
+        } catch (err: any) {
+          setErrorMessage(err?.message || 'Login failed');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Local fallback
+      registerOrUpdateGuest(finalName, emailVal);
+      setIsSubmitting(false);
+      router.push('/profile');
+    }
   };
 
-  const handleDjSubmit = (e: React.FormEvent) => {
+  const handleDjSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    if (authTab === 'signup' && !name.trim()) {
+      setErrorMessage('Please enter your DJ stage name');
+      return;
+    }
+    if (!emailOrPhone.trim()) {
+      setErrorMessage('Please enter your email address');
+      return;
+    }
+    if (authTab === 'signup' && password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters');
+      return;
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
+    const emailVal = emailOrPhone.trim();
+    const isEmail = emailVal.includes('@');
+    const stageName = authTab === 'signup' ? name.trim() : name.trim() || 'Resident DJ';
+    const supabase = getSupabaseClient();
+
+    if (authTab === 'signup') {
+      if (isEmail && supabase) {
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: emailVal,
+              password,
+              name: stageName,
+              role: 'dj',
+            }),
+          });
+          const result = await res.json();
+          if (!res.ok) {
+            setErrorMessage(result.error || 'Failed to create DJ account');
+            setIsSubmitting(false);
+            return;
+          }
+
+          // Sign in directly
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: emailVal,
+            password,
+          });
+
+          if (signInError) {
+            setErrorMessage(signInError.message);
+            setIsSubmitting(false);
+            return;
+          }
+        } catch (err: any) {
+          setErrorMessage(err?.message || 'DJ registration failed');
+          setIsSubmitting(false);
+          return;
+        }
+      }
       loginAsDj();
       setIsSubmitting(false);
       router.push('/dj/workstation');
-    }, 450);
+    } else {
+      // DJ Login
+      if (isEmail && supabase) {
+        try {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: emailVal,
+            password,
+          });
+
+          if (error) {
+            setErrorMessage(error.message);
+            setIsSubmitting(false);
+            return;
+          }
+
+          loginAsDj();
+          setIsSubmitting(false);
+          router.push('/dj/workstation');
+          return;
+        } catch (err: any) {
+          setErrorMessage(err?.message || 'DJ login failed');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Local fallback
+      loginAsDj();
+      setIsSubmitting(false);
+      router.push('/dj/workstation');
+    }
   };
 
   const handleDemoDjInstantLogin = () => {
@@ -191,7 +351,7 @@ export default function LoginPage() {
 
           {/* Footer note */}
           <div className="relative z-10 text-xs text-white/40 flex items-center justify-between">
-            <span>&copy; {new Date().getFullYear()} QueMyDJ. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} QueMyDJ &bull; Powered by Zenbeatz. All rights reserved.</span>
             <span>Club Night Requests &amp; Live Console</span>
           </div>
         </div>
@@ -986,7 +1146,7 @@ export default function LoginPage() {
               {/* Bottom minimal brand footnote */}
               <div className="text-center pt-2">
                 <span className="text-[10px] text-[#8e8778] font-medium">
-                  QueMyDJ &bull; Night Club Requests &amp; Live Console
+                  QueMyDJ &bull; Powered by Zenbeatz &bull; Night Club Requests
                 </span>
               </div>
             </div>
@@ -1018,7 +1178,7 @@ export default function LoginPage() {
                 Reset Password
               </h3>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                Enter your registered email address and we'll send you a secure link to create a new password.
+                Enter your registered email address and we&apos;ll send you a secure link to create a new password.
               </p>
             </div>
 
@@ -1031,19 +1191,49 @@ export default function LoginPage() {
                 <p className="text-[11px] text-emerald-800">
                   Check <span className="font-semibold">{forgotEmail || 'your email'}</span> for instructions to reset your account credentials.
                 </p>
+                <div className="pt-2">
+                  <a
+                    href={`/auth/reset-password?email=${encodeURIComponent(forgotEmail.trim())}`}
+                    className="inline-flex items-center justify-center gap-1.5 w-full h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all"
+                  >
+                    Set New Password Directly <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(false)}
-                  className="w-full mt-2 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all cursor-pointer"
+                  className="w-full mt-1.5 h-8 rounded-xl bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium transition-all cursor-pointer"
                 >
-                  Done
+                  Close
                 </button>
               </div>
             ) : (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   if (!forgotEmail.trim()) return;
+                  
+                  // 1. Call backend reset-password endpoint to generate branded email & token link
+                  try {
+                    await fetch('/api/auth/reset-password', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: forgotEmail.trim() }),
+                    });
+                  } catch (err) {
+                    console.warn('[ForgotPassword] API call error:', err);
+                  }
+
+                  // 2. Also trigger Supabase client recovery request with redirect_to
+                  const supabase = getSupabaseClient();
+                  if (supabase && forgotEmail.includes('@')) {
+                    try {
+                      await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+                        redirectTo: `${window.location.origin}/auth/reset-password`,
+                      });
+                    } catch {}
+                  }
+
                   setForgotSubmitted(true);
                 }}
                 className="space-y-3.5"

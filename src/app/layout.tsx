@@ -1,11 +1,24 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { CueAppProvider } from '@/context/CueAppContext';
 import { MainShell } from '@/components/layout/MainShell';
 
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+});
+
 export const metadata: Metadata = {
-  title: 'QueMyDJ — Live Social DJ Console & Venue Requests',
-  description: 'Pro DJ Console & Live Venue Song Request Network.',
+  title: 'QueMyDJ — Powered by Zenbeatz | Live DJ Console & Venue Requests',
+  description: 'QueMyDJ is powered by Zenbeatz — Pro DJ Console & Live Venue Song Request Network.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -38,7 +51,7 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className="bg-[var(--dj-bg-root)] text-[var(--dj-text-primary)] antialiased min-h-[100dvh] flex flex-col selection:bg-emerald-500 selection:text-black overflow-x-hidden transition-colors duration-200"
+        className={`${inter.variable} ${jetbrainsMono.variable} font-sans bg-[var(--dj-bg-root)] text-[var(--dj-text-primary)] antialiased min-h-[100dvh] flex flex-col selection:bg-emerald-500 selection:text-black overflow-x-hidden transition-colors duration-200`}
       >
         <CueAppProvider>
           <MainShell>{children}</MainShell>
