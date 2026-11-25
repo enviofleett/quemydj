@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCueApp } from '@/context/CueAppContext';
 import { getSupabaseClient } from '@/services/supabaseClient';
 import {
@@ -30,7 +30,16 @@ import {
 } from 'lucide-react';
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#07090d] flex items-center justify-center text-zinc-400">Loading portal...</div>}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     currentUser,
     registerOrUpdateGuest,
@@ -46,8 +55,20 @@ export default function LoginPage() {
   // Form tab: 'login' | 'signup'
   const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
 
-  // Role toggle: 'guest' | 'dj' (Default to 'dj' when accessed on desktop/laptop)
-  const [role, setRole] = useState<'guest' | 'dj'>('dj');
+  // Role toggle: 'guest' | 'dj' (Sync with URL query param ?role=guest or ?role=dj)
+  const roleParam = searchParams.get('role');
+  const redirectParam = searchParams.get('redirect');
+  const [role, setRole] = useState<'guest' | 'dj'>(roleParam === 'guest' ? 'guest' : 'dj');
+
+  useEffect(() => {
+    if (roleParam === 'guest') {
+      setRole('guest');
+      setScreen('form');
+    } else if (roleParam === 'dj') {
+      setRole('dj');
+      setScreen('form');
+    }
+  }, [roleParam]);
 
   // Terms agreement state for signups
   const [agreedToTerms, setAgreedToTerms] = useState(true);
@@ -136,7 +157,7 @@ export default function LoginPage() {
       }
       registerOrUpdateGuest(finalName, emailVal);
       setIsSubmitting(false);
-      router.push('/profile');
+      router.push(redirectParam || '/booth');
     } else {
       // Login
       if (isEmail && supabase) {
@@ -155,7 +176,7 @@ export default function LoginPage() {
           const loggedInName = data.user?.user_metadata?.name || finalName;
           registerOrUpdateGuest(loggedInName, emailVal);
           setIsSubmitting(false);
-          router.push('/profile');
+          router.push(redirectParam || '/booth');
           return;
         } catch (err: any) {
           setErrorMessage(err?.message || 'Login failed');
@@ -167,7 +188,7 @@ export default function LoginPage() {
       // Local fallback
       registerOrUpdateGuest(finalName, emailVal);
       setIsSubmitting(false);
-      router.push('/profile');
+      router.push(redirectParam || '/booth');
     }
   };
 
@@ -233,7 +254,7 @@ export default function LoginPage() {
       }
       loginAsDj();
       setIsSubmitting(false);
-      router.push('/dj/workstation');
+      router.push(redirectParam || '/dj/workstation');
     } else {
       // DJ Login
       if (isEmail && supabase) {
@@ -251,7 +272,7 @@ export default function LoginPage() {
 
           loginAsDj();
           setIsSubmitting(false);
-          router.push('/dj/workstation');
+          router.push(redirectParam || '/dj/workstation');
           return;
         } catch (err: any) {
           setErrorMessage(err?.message || 'DJ login failed');
@@ -263,7 +284,7 @@ export default function LoginPage() {
       // Local fallback
       loginAsDj();
       setIsSubmitting(false);
-      router.push('/dj/workstation');
+      router.push(redirectParam || '/dj/workstation');
     }
   };
 

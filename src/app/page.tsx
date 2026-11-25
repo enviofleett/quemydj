@@ -117,7 +117,7 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/login?role=guest"
+                href="/login?role=guest&redirect=/booth"
                 className="py-3.5 px-5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs sm:text-sm text-center transition-all border border-zinc-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
               >
                 <span>Guest Sign In</span>
@@ -149,14 +149,14 @@ export default function LandingPage() {
 
             <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-5 border-t border-zinc-100">
               <Link
-                href="/dj"
+                href="/dj/workstation"
                 className="flex-1 py-3.5 px-5 rounded-2xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2 shadow-md shadow-black/15 active:scale-[0.98]"
               >
                 <span>Open DJ Workstation</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/login?role=dj"
+                href="/login?role=dj&redirect=/dj/workstation"
                 className="py-3.5 px-5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs sm:text-sm text-center transition-all border border-zinc-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
               >
                 <span>DJ Login</span>

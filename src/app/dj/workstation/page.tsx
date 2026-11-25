@@ -32,9 +32,24 @@ export default function DJBoothConsolePage() {
     requests,
     themeMode,
     toggleThemeMode,
+    isDjAuthenticated,
     logoutDj,
     updateDjSessionStatus,
   } = useCueApp();
+
+  // Authentication Guard: Ensure only authenticated DJs access the workstation
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    // Check localStorage fallback directly to prevent hydration race
+    const storedAuth = typeof window !== 'undefined' ? localStorage.getItem('cuemydj_dj_auth_v1') : null;
+    if (!isDjAuthenticated && storedAuth !== 'true') {
+      router.replace('/login?role=dj&redirect=/dj/workstation');
+    } else {
+      setAuthChecked(true);
+    }
+  }, [isDjAuthenticated, router]);
+
   const isAccepting = currentDj.liveSession?.isAcceptingRequests ?? true;
 
   const [activeTab, setActiveTab] = useState<ConsoleTab>('requests');
