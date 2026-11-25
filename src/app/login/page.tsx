@@ -55,14 +55,19 @@ function LoginFormContent() {
   // Form tab: 'login' | 'signup'
   const [authTab, setAuthTab] = useState<'login' | 'signup'>('login');
 
-  // Role toggle: 'guest' | 'dj' (Sync with URL query param ?role=guest or ?role=dj)
+  // Role toggle: 'guest' | 'dj' | 'venue' (Sync with URL query param ?role=guest, ?role=dj, or ?role=venue)
   const roleParam = searchParams.get('role');
   const redirectParam = searchParams.get('redirect');
-  const [role, setRole] = useState<'guest' | 'dj'>(roleParam === 'guest' ? 'guest' : 'dj');
+  const [role, setRole] = useState<'guest' | 'dj' | 'venue'>(
+    roleParam === 'guest' ? 'guest' : roleParam === 'venue' ? 'venue' : 'dj'
+  );
 
   useEffect(() => {
     if (roleParam === 'guest') {
       setRole('guest');
+      setScreen('form');
+    } else if (roleParam === 'venue') {
+      setRole('venue');
       setScreen('form');
     } else if (roleParam === 'dj') {
       setRole('dj');
@@ -384,11 +389,13 @@ function LoginFormContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-black tracking-tight text-[#0a1a14]">
-                  {role === 'dj' ? 'DJ Booth Sign In' : 'Guest Account'}
+                  {role === 'dj' ? 'DJ Booth Sign In' : role === 'venue' ? 'Venue Owner' : 'Guest Account'}
                 </h2>
                 <p className="text-xs text-[#6e685b] mt-0.5">
                   {role === 'dj'
                     ? 'Enter your resident credentials to manage the queue'
+                    : role === 'venue'
+                    ? 'Manage your lounge splits and resident selectors'
                     : 'Sign in to request songs and tip the DJ'}
                 </p>
               </div>
@@ -407,7 +414,7 @@ function LoginFormContent() {
                       : 'hover:text-[#07241b]'
                   }`}
                 >
-                  DJ Booth
+                  DJ
                 </button>
                 <button
                   type="button"
@@ -422,6 +429,19 @@ function LoginFormContent() {
                   }`}
                 >
                   Guest
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    router.push('/venue');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    role === 'venue'
+                      ? 'bg-[#07241b] text-white shadow-sm'
+                      : 'hover:text-[#07241b]'
+                  }`}
+                >
+                  Venue
                 </button>
               </div>
             </div>
