@@ -36,7 +36,11 @@ import {
   Search,
   AlertCircle,
   HelpCircle,
-  ShieldAlert
+  ShieldAlert,
+  UserPlus,
+  Radio,
+  Percent,
+  Mail
 } from 'lucide-react';
 
 interface BankOption {
@@ -128,6 +132,17 @@ export default function VenueOwnerPortalPage() {
 
   // State: Terms & Conditions modal / preview
   const [showTermsModal, setShowTermsModal] = useState(false);
+
+  // State: DJ Registration & Onboarding modal
+  const [showRegisterDjModal, setShowRegisterDjModal] = useState(false);
+  const [newDjName, setNewDjName] = useState('');
+  const [newDjHandle, setNewDjHandle] = useState('');
+  const [newDjEmail, setNewDjEmail] = useState('');
+  const [newDjBasePrice, setNewDjBasePrice] = useState(5000);
+  const [newDjPasscode, setNewDjPasscode] = useState('');
+  const [newDjGenres, setNewDjGenres] = useState('Afrobeats, Amapiano');
+  const [isRegisteringDj, setIsRegisteringDj] = useState(false);
+  const [djSuccessNotice, setDjSuccessNotice] = useState<string | null>(null);
 
   // Available banks list
   const [banksList, setBanksList] = useState<BankOption[]>([
@@ -508,33 +523,121 @@ export default function VenueOwnerPortalPage() {
 
         {/* TAB 2: RESIDENT DJS */}
         {activeTab === 'djs' && (
-          <div className="space-y-3">
-            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-1">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Resident DJ Roster</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Review performers scheduled at {activeVenue.name} and their guest satisfaction ratings.
-              </p>
+          <div className="space-y-4">
+            {djSuccessNotice && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[12px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>{djSuccessNotice}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDjSuccessNotice(null)}
+                  className="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* COMMISSION SPLIT HERO / NOTICE */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-950 text-white border border-zinc-800 shadow-md space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
+                  <Percent className="w-3 h-3" />
+                  {activeVenue.commissionSplit?.venuePercentage || 20}% Club Earnings Split
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  Paystack Auto-Split
+                </span>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">How Resident DJ Monetization Works</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed mt-1">
+                  Every DJ registered to {activeVenue.name} accepts live guest song requests. Every completed request automatically splits: <strong>{activeVenue.commissionSplit?.venuePercentage || 20}% to your Club Account</strong>, <strong>{activeVenue.commissionSplit?.djPercentage || 70}% directly to the DJ</strong>, and <strong>10% to QueMyDJ platform rails</strong>.
+                </p>
+              </div>
             </div>
 
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
-              {djs.map((dj) => (
-                <div key={dj.id} className="p-3.5 flex items-center justify-between hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-zinc-800 to-zinc-600 flex items-center justify-center text-white font-bold text-xs ring-1 ring-black/[0.06] dark:ring-white/10 flex-shrink-0">
-                      {dj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ'}
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-900 dark:text-white">{dj.name}</h4>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{dj.genres.slice(0, 2).join(', ') || 'Afrobeats, Amapiano'}</p>
-                    </div>
-                  </div>
+            {/* HEADER WITH ONBOARD BUTTON */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Resident DJ Roster</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  {djs.length} registered performers for this club
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setNewDjPasscode(`SKY${Math.floor(10 + Math.random() * 90)}`);
+                  setShowRegisterDjModal(true);
+                }}
+                className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center gap-1.5 transition-all shadow-[0_2px_8px_rgba(16,185,129,0.25)] cursor-pointer shrink-0"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Register DJ</span>
+              </button>
+            </div>
 
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-amber-500 block">★ {dj.rating || '5.0'}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">{dj.totalSets || 12} sets</span>
+            {/* DJ LIST WITH EARNINGS CONTRIBUTION */}
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
+              {djs.map((dj) => {
+                const isOnDeck = dj.id === activeDj.id;
+                // Calculate DJ-specific request volume and venue commission
+                const djRequests = requests.filter((r) => r.djId === dj.id);
+                const djGross = djRequests.reduce((sum, r) => sum + (r.amount || 0), 0);
+                const venueCut = Math.round(djGross * ((activeVenue.commissionSplit?.venuePercentage || 20) / 100));
+
+                return (
+                  <div key={dj.id} className="p-4 flex flex-col gap-3 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-zinc-800 to-zinc-700 flex items-center justify-center text-white font-bold text-xs ring-1 ring-black/[0.06] dark:ring-white/10 flex-shrink-0 relative">
+                          {dj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ'}
+                          {isOnDeck && (
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center">
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-xs font-bold text-zinc-900 dark:text-white">{dj.name}</h4>
+                            {isOnDeck ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                                <Radio className="w-2.5 h-2.5 animate-pulse" />
+                                ON DECK
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full">
+                                OFF DUTY
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                            {dj.handle} • Booth Code: <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">{dj.liveSession?.passcode || 'SKY99'}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block font-mono">
+                          ₦{venueCut.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-medium">Club Cut</span>
+                      </div>
+                    </div>
+
+                    {/* STATS STRIP FOR THIS DJ */}
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/60 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <span>Rate: <strong className="text-zinc-800 dark:text-zinc-200 font-mono">₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}</strong></span>
+                      <span>Requests: <strong className="text-zinc-800 dark:text-zinc-200">{djRequests.length || dj.totalSets || 12}</strong></span>
+                      <span className="text-amber-500 font-bold">★ {dj.rating || '5.0'}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -907,6 +1010,227 @@ export default function VenueOwnerPortalPage() {
             >
               Close &amp; Accept
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* REGISTER / ONBOARD RESIDENT DJ MODAL */}
+      {showRegisterDjModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <UserPlus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Register Resident DJ</h3>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Add DJ to {activeVenue.name} roster</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRegisterDjModal(false)}
+                className="w-7 h-7 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newDjName.trim()) return;
+                setIsRegisteringDj(true);
+
+                const cleanHandle = newDjHandle.trim()
+                  ? (newDjHandle.startsWith('@') ? newDjHandle : `@${newDjHandle}`)
+                  : `@dj${newDjName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+
+                const cleanPasscode = newDjPasscode.trim().toUpperCase() || `SKY${Math.floor(10 + Math.random() * 90)}`;
+
+                const newDjObj = {
+                  id: `dj-${Date.now().toString(36)}`,
+                  name: newDjName.trim(),
+                  handle: cleanHandle,
+                  avatarUrl: 'https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?w=300&auto=format&fit=crop&q=80',
+                  bannerUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1600&auto=format&fit=crop',
+                  bio: `Resident DJ performing at ${activeVenue.name}.`,
+                  genres: newDjGenres.split(',').map((g: string) => g.trim()).filter(Boolean),
+                  rating: 5.0,
+                  totalSets: 0,
+                  currentVenue: {
+                    name: activeVenue.name,
+                    city: activeVenue.city || 'Lagos',
+                    distance: 'Live Booth',
+                    address: activeVenue.address,
+                    lat: 6.4281,
+                    lng: 3.4219,
+                  },
+                  liveSession: {
+                    id: `session-${Date.now()}`,
+                    title: `${newDjName.trim()} Live at ${activeVenue.name}`,
+                    startTime: '10:00 PM',
+                    endTime: '04:00 AM',
+                    isAcceptingRequests: true,
+                    basePrice: Number(newDjBasePrice) || 5000,
+                    serviceFee: 500,
+                    passcode: cleanPasscode,
+                    requestRules: ['Club music policy strictly enforced.', 'Requests are non-refundable once queued.'],
+                  },
+                };
+
+                try {
+                  // Post to server if Supabase is active
+                  await fetch('/api/djs', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      id: newDjObj.id,
+                      name: newDjObj.name,
+                      handle: newDjObj.handle,
+                      genres: newDjObj.genres,
+                      basePrice: newDjObj.liveSession.basePrice,
+                      passcode: newDjObj.liveSession.passcode,
+                      isAcceptingRequests: true,
+                      liveSession: newDjObj.liveSession,
+                    }),
+                  }).catch(() => {});
+
+                  // Update localStorage roster
+                  try {
+                    const existingRaw = localStorage.getItem('cuemydj_djs_prod_v2');
+                    const existingList = existingRaw ? JSON.parse(existingRaw) : djs;
+                    const updatedList = [newDjObj, ...existingList];
+                    localStorage.setItem('cuemydj_djs_prod_v2', JSON.stringify(updatedList));
+                    // Also dispatch storage event so app state refreshes
+                    window.dispatchEvent(new Event('storage'));
+                  } catch {}
+
+                  setDjSuccessNotice(`${newDjObj.name} registered successfully! Passcode: ${cleanPasscode}`);
+                  setShowRegisterDjModal(false);
+                  setNewDjName('');
+                  setNewDjHandle('');
+                  setNewDjEmail('');
+                } finally {
+                  setIsRegisteringDj(false);
+                }
+              }}
+              className="space-y-3.5"
+            >
+              <div>
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                  DJ Stage Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newDjName}
+                  onChange={(e) => {
+                    setNewDjName(e.target.value);
+                    if (!newDjHandle) {
+                      setNewDjHandle(`@dj${e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '')}`);
+                    }
+                  }}
+                  placeholder="e.g. DJ Spinall, DJ Kaywise"
+                  className="w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    Handle
+                  </label>
+                  <input
+                    type="text"
+                    value={newDjHandle}
+                    onChange={(e) => setNewDjHandle(e.target.value)}
+                    placeholder="@djname"
+                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    Booth Passcode
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={newDjPasscode}
+                      onChange={(e) => setNewDjPasscode(e.target.value.toUpperCase())}
+                      placeholder="SKY99"
+                      className="w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-mono uppercase text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                  DJ Contact / Invite Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-3.5" />
+                  <input
+                    type="email"
+                    value={newDjEmail}
+                    onChange={(e) => setNewDjEmail(e.target.value)}
+                    placeholder="dj@bookingagency.com"
+                    className="w-full h-10 pl-9 pr-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    Base Song Rate (₦)
+                  </label>
+                  <input
+                    type="number"
+                    step="500"
+                    min="1000"
+                    value={newDjBasePrice}
+                    onChange={(e) => setNewDjBasePrice(Number(e.target.value))}
+                    className="w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-mono text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                    Club Share Cut
+                  </label>
+                  <div className="w-full h-10 px-3 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 flex items-center text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                    {activeVenue.commissionSplit?.venuePercentage || 20}% Auto-Routed
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+                  Music Genres
+                </label>
+                <input
+                  type="text"
+                  value={newDjGenres}
+                  onChange={(e) => setNewDjGenres(e.target.value)}
+                  placeholder="Afrobeats, Amapiano, Hip-Hop"
+                  className="w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isRegisteringDj || !newDjName.trim()}
+                  className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-md"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>{isRegisteringDj ? 'Registering DJ...' : 'Confirm & Activate DJ'}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

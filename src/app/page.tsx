@@ -47,6 +47,12 @@ export default function LandingPage() {
           {/* Direct Dual Login in Header */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
+              href="/venue"
+              className="hidden md:inline-flex text-xs sm:text-sm font-semibold tracking-wide px-3 sm:px-4 py-2 rounded-full text-zinc-700 hover:text-black hover:bg-black/[0.04] transition-all"
+            >
+              Venue Portal
+            </Link>
+            <Link
               href="/login?role=dj"
               className="text-xs sm:text-sm font-semibold tracking-wide px-3 sm:px-4 py-2 rounded-full text-zinc-700 hover:text-black hover:bg-black/[0.04] transition-all"
             >
@@ -163,8 +169,47 @@ export default function LandingPage() {
                 <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
               </Link>
             </div>
+            
+            {/* Direct Venue Owner Onboarding Link */}
+            <div className="relative z-10 mt-3 pt-2 text-center border-t border-zinc-100/60">
+              <Link
+                href="/venue"
+                className="text-xs text-zinc-500 hover:text-emerald-700 font-medium transition-colors inline-flex items-center gap-1"
+              >
+                <span>Are you a club or lounge owner?</span>
+                <span className="font-bold underline">Register your venue &rarr;</span>
+              </Link>
+            </div>
           </div>
 
+        </div>
+
+        {/* THIRD COMPACT VENUE OWNER REGISTRATION BANNER */}
+        <div className="mt-8 w-full max-w-4xl p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-emerald-50/80 via-white to-zinc-50 border border-emerald-200/80 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-600/20 shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-extrabold text-zinc-950">
+                  Own a Club, Lounge, or Nightlife Space?
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                  Venue Owners
+                </span>
+              </div>
+              <p className="text-xs text-zinc-600 mt-0.5 max-w-xl">
+                Onboard your venue to earn automated commission splits on every song request, track live crowd spend, and manage resident selectors.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/venue"
+            className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs text-center transition-all shadow-sm shrink-0 flex items-center justify-center gap-1.5"
+          >
+            <span>Register Venue &rarr;</span>
+          </Link>
         </div>
 
         {/* SOCIAL CROWD STATS STRIP */}
