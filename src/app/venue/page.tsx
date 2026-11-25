@@ -558,9 +558,9 @@ export default function VenueOwnerPortalPage() {
                   setNewDjPasscode(`SKY${Math.floor(10 + Math.random() * 90)}`);
                   setShowRegisterDjModal(true);
                 }}
-                className="px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center gap-1.5 transition-all shadow-[0_2px_8px_rgba(16,185,129,0.25)] cursor-pointer shrink-0"
+                className="px-3.5 py-2 rounded-xl bg-[#27382b] hover:bg-[#1e2c21] text-white text-xs font-bold flex items-center gap-1.5 transition-all border border-[#445d49]/70 shadow-[0_2px_10px_rgba(30,44,33,0.3)] hover:shadow-[0_4px_14px_rgba(30,44,33,0.4)] cursor-pointer shrink-0"
               >
-                <UserPlus className="w-3.5 h-3.5" />
+                <UserPlus className="w-3.5 h-3.5 text-emerald-300" />
                 <span>Register DJ</span>
               </button>
             </div>
@@ -1355,9 +1355,9 @@ export default function VenueOwnerPortalPage() {
                 <button
                   type="submit"
                   disabled={isRegisteringDj || !newDjName.trim()}
-                  className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-md"
+                  className="w-full h-11 rounded-xl bg-gradient-to-r from-[#27382b] to-[#1e2c21] hover:from-[#314535] hover:to-[#27382b] disabled:opacity-50 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#445d49]/80 shadow-[0_4px_16px_rgba(30,44,33,0.35)]"
                 >
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="w-4 h-4 text-emerald-300" />
                   <span>{isRegisteringDj ? 'Registering DJ...' : 'Confirm & Activate DJ'}</span>
                 </button>
               </div>
