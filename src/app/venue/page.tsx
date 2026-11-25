@@ -153,51 +153,65 @@ export default function VenueOwnerPortalPage() {
       <main className="px-5 pt-3 pb-24 space-y-4">
         {activeTab === 'overview' && (
           <>
-            {/* TONIGHT'S LIVE REVENUE HERO CARD (Matches DJ Console tactile card) */}
-            <div className="rounded-[22px] bg-zinc-950 text-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-white/[0.08] text-[11px] font-medium text-emerald-400">
+            {/* ATMOSPHERIC EDITORIAL HERO BANNER (Matches Guest & DJ console full-bleed style) */}
+            <section className="relative w-full rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 text-white flex flex-col justify-between p-5 shadow-[0_8px_30px_rgba(0,0,0,0.18)] min-h-[300px]">
+              {/* Full-bleed atmospheric club photography */}
+              <div
+                className="absolute inset-0 bg-cover bg-center scale-105 pointer-events-none"
+                style={{
+                  backgroundImage: `url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1600&auto=format&fit=crop')`,
+                }}
+              />
+              {/* Balanced top & bottom editorial vignette */}
+              <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/80 via-zinc-950/40 to-zinc-950/95 pointer-events-none" />
+
+              {/* Top Bar with Live Tag and Split Pill */}
+              <div className="relative z-10 flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-zinc-950/70 backdrop-blur-md border border-white/15 text-[11px] font-mono uppercase tracking-wider text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span>Tonight&apos;s Club Commission</span>
                 </span>
-                <span className="text-[12px] font-mono text-zinc-400 font-semibold bg-white/10 px-2 py-0.5 rounded-md">
+                <span className="text-[11px] font-mono text-zinc-300 font-semibold bg-zinc-950/70 backdrop-blur-md border border-white/15 px-2.5 py-1 rounded-full">
                   {activeVenue.commissionSplit.venuePercentage}% Split
                 </span>
               </div>
 
-              <div>
-                <div className="text-[11px] text-zinc-400 uppercase tracking-wider font-semibold">
-                  Club Host Earnings
+              {/* Bottom Anchor: Large Host Earnings + 3-way Split Grid */}
+              <div className="relative z-10 space-y-3.5 mt-8">
+                <div>
+                  <div className="text-[11px] text-zinc-300 uppercase tracking-wider font-mono font-medium">
+                    Club Host Earnings
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-extrabold text-emerald-400 tracking-tight tabular-nums mt-0.5">
+                    ₦{venueCut.toLocaleString()}
+                  </div>
                 </div>
-                <div className="text-3xl font-black text-emerald-400 tracking-tight tabular-nums mt-0.5">
-                  ₦{venueCut.toLocaleString()}
+
+                {/* Translucent Frosted Glass Split Breakdown */}
+                <div className="pt-3 border-t border-white/15 grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 backdrop-blur-md border border-white/10">
+                    <span className="text-[10px] text-zinc-400 block font-medium">Gross Room Spend</span>
+                    <span className="text-xs font-bold text-white tabular-nums mt-0.5 block">
+                      ₦{totalGrossSpend.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 backdrop-blur-md border border-white/10">
+                    <span className="text-[10px] text-zinc-400 block font-medium">DJ Share ({activeVenue.commissionSplit.djPercentage}%)</span>
+                    <span className="text-xs font-bold text-emerald-400 tabular-nums mt-0.5 block">
+                      ₦{djCut.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-zinc-950/60 backdrop-blur-md border border-white/10">
+                    <span className="text-[10px] text-zinc-400 block font-medium">Platform ({activeVenue.commissionSplit.platformPercentage}%)</span>
+                    <span className="text-xs font-bold text-zinc-300 tabular-nums mt-0.5 block">
+                      ₦{platformFee.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              {/* Total Room Spend & Payout Split Chips */}
-              <div className="pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
-                <div className="p-2.5 rounded-xl bg-white/[0.04]">
-                  <span className="text-[10px] text-zinc-400 block font-medium">Gross Room Spend</span>
-                  <span className="text-xs font-bold text-white tabular-nums">
-                    ₦{totalGrossSpend.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-white/[0.04]">
-                  <span className="text-[10px] text-zinc-400 block font-medium">DJ Share ({activeVenue.commissionSplit.djPercentage}%)</span>
-                  <span className="text-xs font-bold text-emerald-400 tabular-nums">
-                    ₦{djCut.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-white/[0.04]">
-                  <span className="text-[10px] text-zinc-400 block font-medium">Platform ({activeVenue.commissionSplit.platformPercentage}%)</span>
-                  <span className="text-xs font-bold text-zinc-400 tabular-nums">
-                    ₦{platformFee.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </div>
+            </section>
 
             {/* LIVE RESIDENT DJ IN THE BUILDING */}
             <div className="rounded-2xl p-4 bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
