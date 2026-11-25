@@ -40,7 +40,11 @@ import {
   UserPlus,
   Radio,
   Percent,
-  Mail
+  Mail,
+  Zap,
+  Disc3,
+  Flame,
+  Star
 } from 'lucide-react';
 
 interface BankOption {
@@ -580,60 +584,153 @@ export default function VenueOwnerPortalPage() {
               </button>
             </div>
 
-            {/* DJ LIST WITH EARNINGS CONTRIBUTION */}
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
+            {/* DJ LIST WITH PREMIUM VIP CARDS */}
+            <div className="space-y-3">
               {djs.map((dj) => {
                 const isOnDeck = dj.id === activeDj.id;
                 // Calculate DJ-specific request volume and venue commission
                 const djRequests = requests.filter((r) => r.djId === dj.id);
                 const djGross = djRequests.reduce((sum, r) => sum + (r.amount || 0), 0);
                 const venueCut = Math.round(djGross * ((activeVenue.commissionSplit?.venuePercentage || 20) / 100));
+                const djInitials = dj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ';
 
                 return (
-                  <div key={dj.id} className="p-4 flex flex-col gap-3 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                    <div className="flex items-center justify-between">
+                  <div
+                    key={dj.id}
+                    className={`relative rounded-2xl transition-all duration-200 overflow-hidden ${
+                      isOnDeck
+                        ? 'bg-gradient-to-br from-zinc-900/95 via-black to-zinc-950 text-white p-4 border border-emerald-500/30 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.18)]'
+                        : 'bg-white dark:bg-zinc-900/70 p-4 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    {/* Top ambient highlight for ON DECK */}
+                    {isOnDeck && (
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80" />
+                    )}
+
+                    {/* TOP SECTION: AVATAR, NAME, BOOTH STATUS, AND REVENUE */}
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-zinc-800 to-zinc-700 flex items-center justify-center text-white font-bold text-xs ring-1 ring-black/[0.06] dark:ring-white/10 flex-shrink-0 relative">
-                          {dj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ'}
+                        {/* Avatar */}
+                        <div className="relative shrink-0">
+                          <div
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xs shadow-inner ${
+                              isOnDeck
+                                ? 'bg-gradient-to-tr from-emerald-950 via-zinc-900 to-emerald-900 text-emerald-300 ring-2 ring-emerald-500/40'
+                                : 'bg-gradient-to-tr from-zinc-800 to-zinc-700 text-zinc-100 ring-1 ring-black/[0.06] dark:ring-white/10'
+                            }`}
+                          >
+                            {isOnDeck ? (
+                              <Disc3 className="w-5 h-5 text-emerald-400 animate-[spin_8s_linear_infinite]" />
+                            ) : (
+                              <span className="tracking-tight">{djInitials}</span>
+                            )}
+                          </div>
                           {isOnDeck && (
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-zinc-900 flex items-center justify-center">
-                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-black flex items-center justify-center shadow-sm">
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             </span>
                           )}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-xs font-bold text-zinc-900 dark:text-white">{dj.name}</h4>
+
+                        {/* DJ Stage & Booth credentials */}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4
+                              className={`text-sm font-bold tracking-tight truncate ${
+                                isOnDeck ? 'text-white' : 'text-zinc-900 dark:text-white'
+                              }`}
+                            >
+                              {dj.name}
+                            </h4>
+
                             {isOnDeck ? (
-                              <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                                <Radio className="w-2.5 h-2.5 animate-pulse" />
-                                ON DECK
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.3)] whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                LIVE ON DECK
                               </span>
                             ) : (
-                              <span className="text-[9px] font-semibold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-full">
+                              <span className="px-1.5 py-0.5 rounded-full text-[8.5px] font-bold uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200/60 dark:border-zinc-700/60 whitespace-nowrap">
                                 OFF DUTY
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                            {dj.handle} • Booth Code: <span className="font-mono font-semibold text-zinc-700 dark:text-zinc-300">{dj.liveSession?.passcode || 'SKY99'}</span>
-                          </p>
+
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap text-[11px]">
+                            <span className="text-zinc-400 font-medium">
+                              {dj.handle}
+                            </span>
+                            <span className="text-zinc-500 dark:text-zinc-600">•</span>
+                            <span
+                              className={`text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-wider whitespace-nowrap ${
+                                isOnDeck
+                                  ? 'bg-zinc-800/80 text-emerald-400 border border-emerald-500/20'
+                                  : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300'
+                              }`}
+                            >
+                              Code: {dj.liveSession?.passcode || 'SKY99'}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block font-mono">
+                      {/* CLUB EARNINGS BADGE */}
+                      <div className="text-right shrink-0">
+                        <div
+                          className={`text-sm font-bold font-mono tracking-tight ${
+                            venueCut > 0
+                              ? 'text-emerald-500 dark:text-emerald-400'
+                              : isOnDeck
+                              ? 'text-zinc-300'
+                              : 'text-zinc-400'
+                          }`}
+                        >
                           ₦{venueCut.toLocaleString()}
+                        </div>
+                        <span
+                          className={`text-[10px] font-semibold uppercase tracking-wider block ${
+                            isOnDeck ? 'text-zinc-400' : 'text-zinc-400'
+                          }`}
+                        >
+                          Club Cut
                         </span>
-                        <span className="text-[10px] text-zinc-400 font-medium">Club Cut</span>
                       </div>
                     </div>
 
-                    {/* STATS STRIP FOR THIS DJ */}
-                    <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/60 text-[11px] text-zinc-500 dark:text-zinc-400">
-                      <span>Rate: <strong className="text-zinc-800 dark:text-zinc-200 font-mono">₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}</strong></span>
-                      <span>Requests: <strong className="text-zinc-800 dark:text-zinc-200">{djRequests.length || dj.totalSets || 12}</strong></span>
-                      <span className="text-amber-500 font-bold">★ {dj.rating || '5.0'}</span>
+                    {/* BOTTOM METRICS BAR */}
+                    <div
+                      className={`mt-3.5 pt-3 flex items-center justify-between text-xs border-t ${
+                        isOnDeck
+                          ? 'border-zinc-800/80 text-zinc-300'
+                          : 'border-zinc-100 dark:border-zinc-800/60 text-zinc-600 dark:text-zinc-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Rate:</span>
+                        <span
+                          className={`font-mono font-bold ${
+                            isOnDeck ? 'text-white' : 'text-zinc-900 dark:text-white'
+                          }`}
+                        >
+                          ₦{(dj.liveSession?.basePrice || 5000).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Requests:</span>
+                        <span
+                          className={`font-semibold ${
+                            isOnDeck ? 'text-emerald-400' : 'text-zinc-900 dark:text-white'
+                          }`}
+                        >
+                          {djRequests.length || (isOnDeck ? 2 : dj.totalSets || 12)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span className="font-bold text-amber-400">{dj.rating || '5.0'}</span>
+                      </div>
                     </div>
                   </div>
                 );
