@@ -580,35 +580,82 @@ export default function VenueOwnerPortalPage() {
                     key={dj.id}
                     className={`relative rounded-2xl transition-all duration-200 overflow-hidden ${
                       isOnDeck
-                        ? 'bg-gradient-to-br from-zinc-900/95 via-black to-zinc-950 text-white p-4 border border-emerald-500/30 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.18)]'
+                        ? 'bg-gradient-to-br from-[#27382b] via-[#1e2c21] to-[#152018] text-white p-4 border border-[#445d49]/60 shadow-[0_8px_28px_-6px_rgba(30,44,33,0.45)]'
                         : 'bg-white dark:bg-zinc-900/70 p-4 border border-zinc-200/80 dark:border-zinc-800/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-zinc-300 dark:hover:border-zinc-700'
                     }`}
                   >
                     {/* Top ambient highlight for ON DECK */}
                     {isOnDeck && (
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80" />
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
+                    )}
+
+                    {/* SPEAKER ACOUSTIC TRANSDUCER & SOUNDWAVE BACKGROUND DESIGN (ON DECK ONLY) */}
+                    {isOnDeck && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+                        {/* Soft acoustic dispersion lighting */}
+                        <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-emerald-400/[0.08] blur-2xl" />
+                        <div className="absolute -bottom-10 left-10 w-36 h-36 rounded-full bg-emerald-500/[0.06] blur-2xl" />
+
+                        {/* Physical acoustic transducer & speaker cone diaphragm (Top-Right) */}
+                        <svg
+                          className="absolute -top-12 -right-12 w-56 h-56 text-white/[0.07] animate-speaker-cone"
+                          viewBox="0 0 200 200"
+                          fill="none"
+                        >
+                          {/* Outer Speaker Chassis / Surround Rim */}
+                          <circle cx="100" cy="100" r="95" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+                          <circle cx="100" cy="100" r="88" stroke="currentColor" strokeWidth="0.75" />
+                          
+                          {/* Rubber Surround Roll */}
+                          <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="2" opacity="0.6" />
+                          <circle cx="100" cy="100" r="72" stroke="currentColor" strokeWidth="0.75" strokeDasharray="6 3" />
+                          
+                          {/* Acoustic Cone Ribs */}
+                          <circle cx="100" cy="100" r="64" stroke="currentColor" strokeWidth="1" strokeDasharray="4 2" />
+                          <circle cx="100" cy="100" r="54" stroke="currentColor" strokeWidth="0.75" />
+                          <circle cx="100" cy="100" r="44" stroke="currentColor" strokeWidth="1.2" strokeDasharray="8 3" />
+                          
+                          {/* Subwoofer Voice Coil & Dust Cap */}
+                          <circle cx="100" cy="100" r="32" stroke="currentColor" strokeWidth="1.5" className="fill-white/[0.04]" />
+                          <circle cx="100" cy="100" r="16" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+                          <circle cx="100" cy="100" r="6" fill="currentColor" />
+
+                          {/* Sound wave radiates */}
+                          <path d="M 25 100 A 75 75 0 0 1 175 100" stroke="currentColor" strokeWidth="0.75" strokeDasharray="2 4" />
+                          <path d="M 100 25 A 75 75 0 0 1 100 175" stroke="currentColor" strokeWidth="0.75" strokeDasharray="2 4" />
+                        </svg>
+
+                        {/* Speaker Grille Micro-perforations Pattern */}
+                        <div
+                          className="absolute inset-0 opacity-[0.035]"
+                          style={{
+                            backgroundImage: `radial-gradient(circle at center, #ffffff 1px, transparent 1px)`,
+                            backgroundSize: '12px 12px',
+                          }}
+                        />
+                      </div>
                     )}
 
                     {/* TOP SECTION: AVATAR, NAME, BOOTH STATUS, AND REVENUE */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                    <div className="relative z-10 flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         {/* Avatar */}
                         <div className="relative shrink-0">
                           <div
                             className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-xs shadow-inner ${
                               isOnDeck
-                                ? 'bg-gradient-to-tr from-emerald-950 via-zinc-900 to-emerald-900 text-emerald-300 ring-2 ring-emerald-500/40'
+                                ? 'bg-[#314535] text-white ring-2 ring-emerald-400/40 shadow-[0_2px_10px_rgba(0,0,0,0.25)]'
                                 : 'bg-gradient-to-tr from-zinc-800 to-zinc-700 text-zinc-100 ring-1 ring-black/[0.06] dark:ring-white/10'
                             }`}
                           >
                             {isOnDeck ? (
-                              <Disc3 className="w-5 h-5 text-emerald-400 animate-[spin_8s_linear_infinite]" />
+                              <Disc3 className="w-5 h-5 text-emerald-300 animate-[spin_8s_linear_infinite]" />
                             ) : (
                               <span className="tracking-tight">{djInitials}</span>
                             )}
                           </div>
                           {isOnDeck && (
-                            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-black flex items-center justify-center shadow-sm">
+                            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#1e2c21] flex items-center justify-center shadow-sm">
                               <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" />
                             </span>
                           )}
@@ -626,8 +673,8 @@ export default function VenueOwnerPortalPage() {
                             </h4>
 
                             {isOnDeck ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.3)] whitespace-nowrap">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-white/15 text-white border border-white/20 backdrop-blur-sm shadow-sm whitespace-nowrap">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
                                 LIVE ON DECK
                               </span>
                             ) : (
@@ -638,14 +685,14 @@ export default function VenueOwnerPortalPage() {
                           </div>
 
                           <div className="flex items-center gap-1.5 mt-1 flex-wrap text-[11px]">
-                            <span className="text-zinc-400 font-medium">
+                            <span className={isOnDeck ? 'text-white/80 font-medium' : 'text-zinc-400 font-medium'}>
                               {dj.handle}
                             </span>
-                            <span className="text-zinc-500 dark:text-zinc-600">•</span>
+                            <span className={isOnDeck ? 'text-white/40' : 'text-zinc-500 dark:text-zinc-600'}>•</span>
                             <span
-                              className={`text-[9.5px] px-1.5 py-0.5 rounded font-mono font-bold tracking-wider whitespace-nowrap ${
+                              className={`text-[9.5px] px-2 py-0.5 rounded-md font-mono font-bold tracking-wider whitespace-nowrap ${
                                 isOnDeck
-                                  ? 'bg-zinc-800/80 text-emerald-400 border border-emerald-500/20'
+                                  ? 'bg-[#17221a] text-white border border-white/15 shadow-inner'
                                   : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300'
                               }`}
                             >
@@ -660,9 +707,11 @@ export default function VenueOwnerPortalPage() {
                         <div
                           className={`text-sm font-bold font-mono tracking-tight ${
                             venueCut > 0
-                              ? 'text-emerald-500 dark:text-emerald-400'
+                              ? isOnDeck
+                                ? 'text-white font-extrabold'
+                                : 'text-emerald-500 dark:text-emerald-400'
                               : isOnDeck
-                              ? 'text-zinc-300'
+                              ? 'text-white/90'
                               : 'text-zinc-400'
                           }`}
                         >
@@ -670,7 +719,7 @@ export default function VenueOwnerPortalPage() {
                         </div>
                         <span
                           className={`text-[10px] font-semibold uppercase tracking-wider block ${
-                            isOnDeck ? 'text-zinc-400' : 'text-zinc-400'
+                            isOnDeck ? 'text-white/70' : 'text-zinc-400'
                           }`}
                         >
                           Club Cut
@@ -680,14 +729,16 @@ export default function VenueOwnerPortalPage() {
 
                     {/* BOTTOM METRICS BAR */}
                     <div
-                      className={`mt-3.5 pt-3 flex items-center justify-between text-xs border-t ${
+                      className={`relative z-10 mt-3.5 pt-3 flex items-center justify-between text-xs border-t ${
                         isOnDeck
-                          ? 'border-zinc-800/80 text-zinc-300'
+                          ? 'border-white/15 text-white'
                           : 'border-zinc-100 dark:border-zinc-800/60 text-zinc-600 dark:text-zinc-400'
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Rate:</span>
+                        <span className={`text-[11px] uppercase tracking-wider font-medium ${isOnDeck ? 'text-white/70' : 'text-zinc-400'}`}>
+                          Rate:
+                        </span>
                         <span
                           className={`font-mono font-bold ${
                             isOnDeck ? 'text-white' : 'text-zinc-900 dark:text-white'
@@ -698,10 +749,12 @@ export default function VenueOwnerPortalPage() {
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Requests:</span>
+                        <span className={`text-[11px] uppercase tracking-wider font-medium ${isOnDeck ? 'text-white/70' : 'text-zinc-400'}`}>
+                          Requests:
+                        </span>
                         <span
-                          className={`font-semibold ${
-                            isOnDeck ? 'text-emerald-400' : 'text-zinc-900 dark:text-white'
+                          className={`font-bold ${
+                            isOnDeck ? 'text-white' : 'text-zinc-900 dark:text-white'
                           }`}
                         >
                           {djRequests.length || (isOnDeck ? 2 : dj.totalSets || 12)}
@@ -709,8 +762,8 @@ export default function VenueOwnerPortalPage() {
                       </div>
 
                       <div className="flex items-center gap-1">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span className="font-bold text-amber-400">{dj.rating || '5.0'}</span>
+                        <Star className={`w-3.5 h-3.5 ${isOnDeck ? 'fill-amber-300 text-amber-300' : 'fill-amber-400 text-amber-400'}`} />
+                        <span className={`font-bold ${isOnDeck ? 'text-white' : 'text-amber-400'}`}>{dj.rating || '5.0'}</span>
                       </div>
                     </div>
                   </div>
