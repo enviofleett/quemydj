@@ -89,6 +89,7 @@ export default function VenueOwnerPortalPage() {
   });
 
   const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+  const [isVenueDropdownOpen, setIsVenueDropdownOpen] = useState(false);
   const [bankSearch, setBankSearch] = useState('');
   const [selectedBankCode, setSelectedBankCode] = useState(savedBank.bankCode);
   const [accountNumber, setAccountNumber] = useState(savedBank.accountNumber);
@@ -194,9 +195,9 @@ export default function VenueOwnerPortalPage() {
 
   return (
     <div className="flex flex-col flex-1 bg-white dark:bg-[#0c0d10] text-zinc-950 dark:text-zinc-100 min-h-[100dvh] transition-colors duration-200">
-      {/* 1. STANDALONE VENUE HEADER (Aligned with DJ Workstation Console Header) */}
-      <header className="px-4 sm:px-6 h-14 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-[#0c0d10]/95 backdrop-blur-xl z-20 transition-colors">
-        {/* Left: Brand Identity & Active Venue */}
+      {/* 1. STANDALONE VENUE HEADER */}
+      <header className="px-4 sm:px-6 h-14 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-[#0c0d10]/95 backdrop-blur-xl z-30 transition-colors">
+        {/* Left: Brand Identity & Custom Venue Selector */}
         <div className="flex items-center gap-2.5 min-w-0">
           <Link href="/" className="flex items-center gap-2 shrink-0 group">
             <div className="relative w-7 h-7 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-black flex items-center justify-center shadow-xs">
@@ -218,22 +219,57 @@ export default function VenueOwnerPortalPage() {
             </div>
           </Link>
 
-          <span className="hidden sm:block h-3.5 w-px bg-zinc-200 dark:bg-zinc-800" />
+          <span className="h-4 w-px bg-zinc-200 dark:bg-zinc-800 shrink-0 mx-0.5" />
 
-          {/* Venue Selector / Location badge */}
-          <div className="flex items-center gap-1.5 min-w-0 pl-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-            <select
-              value={activeVenue.id}
-              onChange={(e) => setActiveVenueId(e.target.value)}
-              className="bg-transparent border-none text-[12px] font-semibold text-zinc-800 dark:text-zinc-200 focus:outline-none cursor-pointer truncate max-w-[130px] sm:max-w-[200px]"
+          {/* Custom Venue Dropdown Pill */}
+          <div className="relative min-w-0">
+            <button
+              type="button"
+              onClick={() => setIsVenueDropdownOpen(!isVenueDropdownOpen)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80 border border-zinc-200/60 dark:border-zinc-700/60 text-[12px] font-semibold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer max-w-[170px] sm:max-w-[220px]"
             >
-              {venues.map((v) => (
-                <option key={v.id} value={v.id} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                  {v.name} ({v.city})
-                </option>
-              ))}
-            </select>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="truncate">{activeVenue.name}</span>
+              <ChevronDown className="w-3 h-3 text-zinc-400 shrink-0 ml-0.5" />
+            </button>
+
+            {isVenueDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setIsVenueDropdownOpen(false)}
+                />
+                <div className="absolute left-0 mt-1.5 w-60 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl py-1 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800 text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    Select Managed Venue
+                  </div>
+                  {venues.map((v) => {
+                    const isSelected = v.id === activeVenue.id;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveVenueId(v.id);
+                          setIsVenueDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 font-bold'
+                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60'
+                        }`}
+                      >
+                        <div className="min-w-0 truncate">
+                          <div className="truncate">{v.name}</div>
+                          <div className="text-[10px] text-zinc-400 font-normal">{v.city} • ID: {v.id}</div>
+                        </div>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
