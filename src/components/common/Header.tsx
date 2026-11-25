@@ -61,14 +61,14 @@ export const Header: React.FC = () => {
           </Link>
 
           <Link
-            href="/dj/queue"
+            href="/dj/workstation"
             className={`px-3 py-1.5 rounded-md transition-colors ${
               pathname.startsWith('/dj')
                 ? 'bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
           >
-            DJ Booth
+            DJ Workstation
           </Link>
 
           <button

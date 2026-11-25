@@ -11,11 +11,11 @@ export const MobileFooterNav: React.FC = () => {
   const { requests, currentUser } = useCueApp();
 
   const isDJArea = pathname.startsWith('/dj');
-  const isWorkstation = pathname === '/dj/workstation';
+  const isWorkstation = pathname.startsWith('/dj');
   const isLogin = pathname === '/login';
 
-  // Do not show mobile tab bar on full-screen desktop DJ Workstation console or clean Login/Onboarding screen
-  if (isWorkstation || isLogin) return null;
+  // Do not show separate mobile footer navigation on the DJ Workstation (it has its own responsive console tabs)
+  if (isDJArea || isWorkstation || isLogin) return null;
 
   const activeCount = requests.filter(
     (r) => r.status === 'waiting' || r.status === 'accepted' || r.status === 'playing'

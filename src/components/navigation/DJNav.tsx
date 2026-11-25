@@ -29,31 +29,11 @@ export const DJNav: React.FC = () => {
 
   const navLinks = [
     {
-      label: 'Live Queue',
-      href: '/dj/queue',
+      label: 'Workstation',
+      href: '/dj/workstation',
       icon: Layers,
       badge: waitingCount > 0 ? waitingCount : null,
       highlight: true,
-    },
-    {
-      label: 'Overview',
-      href: '/dj',
-      icon: Radio,
-    },
-    {
-      label: 'Sessions',
-      href: '/dj/sessions',
-      icon: Sliders,
-    },
-    {
-      label: 'Earnings',
-      href: '/dj/earnings',
-      icon: Wallet,
-    },
-    {
-      label: 'Settings',
-      href: '/dj/settings',
-      icon: Settings,
     },
   ];
 
@@ -93,7 +73,7 @@ export const DJNav: React.FC = () => {
       <header className="hidden md:flex items-center justify-between px-8 py-3 bg-white dark:bg-[#0a0e17] border-b border-zinc-200 dark:border-[#1e293b] transition-colors">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <Link href="/dj" className="flex items-center gap-2.5 group">
+            <Link href="/dj/workstation" className="flex items-center gap-2.5 group">
               <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-black flex items-center justify-center border border-zinc-700/50 group-hover:scale-105 transition-all">
                 <Image
                   src="/brand-logo-transparent.png"

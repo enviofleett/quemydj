@@ -18,11 +18,17 @@ import {
   CheckCircle2,
   Sparkles,
   Layers,
-  ArrowDownLeft
+  ArrowDownLeft,
+  Moon,
+  Sun,
+  Sliders,
+  Check,
+  Headphones,
+  ArrowLeft
 } from 'lucide-react';
 
-export default function VenueOwnerMobilePortal() {
-  const { venues, activeVenue, setActiveVenueId, requests, djs } = useCueApp();
+export default function VenueOwnerPortalPage() {
+  const { venues, activeVenue, setActiveVenueId, requests, djs, themeMode, toggleThemeMode } = useCueApp();
 
   // Find active resident DJ for this venue (with robust fallback)
   const activeDj =
@@ -58,100 +64,133 @@ export default function VenueOwnerMobilePortal() {
   const [activeTab, setActiveTab] = useState<'overview' | 'sessions' | 'payouts'>('overview');
 
   return (
-    <div className="flex flex-col flex-1 bg-zinc-950 text-white min-h-[100dvh] pb-24 select-none">
-      {/* 1. TOP STATUS BAR & VENUE SELECTOR */}
-      <header className="px-5 pt-4 pb-3 border-b border-white/[0.08] sticky top-0 bg-zinc-950/90 backdrop-blur-xl z-20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Building2 className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold tracking-wider uppercase text-emerald-400 block">
-                Venue Portal
-              </span>
-              <h1 className="text-sm font-bold text-white leading-tight truncate max-w-[190px]">
+    <div className="flex flex-col flex-1 bg-white dark:bg-[#0c0d10] text-zinc-950 dark:text-zinc-100 min-h-[100dvh] transition-colors duration-200">
+      {/* 1. STICKY BOOTH HEADER (Identical to DJ Queue header styling) */}
+      <header className="px-5 h-14 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-[#0c0d10]/90 backdrop-blur-xl z-20 transition-colors">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Link
+            href="/"
+            aria-label="Back to home"
+            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center flex-shrink-0 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-[16px] font-bold text-zinc-950 dark:text-white tracking-tight truncate leading-tight">
                 {activeVenue.name}
               </h1>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
             </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate leading-tight mt-0.5">
+              Club Host Portal • {activeVenue.city}
+            </p>
           </div>
+        </div>
 
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Quick venue switcher dropdown if multiple clubs */}
           <select
             value={activeVenue.id}
             onChange={(e) => setActiveVenueId(e.target.value)}
-            className="bg-zinc-900 border border-white/15 text-xs text-zinc-300 font-semibold px-2.5 py-1.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-[11px] font-semibold px-2 py-1.5 rounded-xl text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             {venues.map((v) => (
               <option key={v.id} value={v.id}>
-                {v.city} &bull; {v.name}
+                {v.city} • {v.name}
               </option>
             ))}
           </select>
-        </div>
 
-        {/* Tab Filter Capsule */}
-        <div className="grid grid-cols-3 p-1 bg-zinc-900 rounded-xl mt-3 border border-white/[0.06]">
-          {[
-            { id: 'overview', label: 'Live Spend' },
-            { id: 'sessions', label: 'DJ Performance' },
-            { id: 'payouts', label: 'Bank Settlement' },
-          ].map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id as typeof activeTab)}
-              className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === t.id
-                  ? 'bg-emerald-500 text-black shadow-sm'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+          <button
+            type="button"
+            onClick={toggleThemeMode}
+            title={themeMode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+            className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors cursor-pointer"
+          >
+            {themeMode === 'light' ? (
+              <Moon className="w-4 h-4 text-zinc-700" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400" />
+            )}
+          </button>
         </div>
       </header>
 
-      {/* 2. TAB CONTENT */}
-      <main className="px-5 pt-4 space-y-4">
+      {/* 2. NATIVE SEGMENTED TABS (Identical to DJ Queue / User Dashboard tabs) */}
+      <div className="px-5 pt-3 pb-1">
+        <div
+          role="tablist"
+          className="grid grid-cols-3 p-1 bg-zinc-100 dark:bg-zinc-900 border border-transparent dark:border-zinc-800/80 rounded-xl"
+        >
+          {[
+            { id: 'overview', label: 'Live Spend' },
+            { id: 'sessions', label: 'Resident DJs' },
+            { id: 'payouts', label: 'Settlement' },
+          ].map((tab) => {
+            const isCurrent = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isCurrent}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`h-8 rounded-[9px] text-[12px] tabular-nums transition-all flex items-center justify-center ${
+                  isCurrent
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
+                    : 'text-zinc-500 dark:text-zinc-400 font-medium hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. TAB CONTENT */}
+      <main className="px-5 pt-3 pb-24 space-y-4">
         {activeTab === 'overview' && (
           <>
-            {/* TONIGHT'S LIVE REVENUE HERO CARD */}
-            <div className="relative overflow-hidden rounded-3xl p-5 bg-gradient-to-br from-emerald-950/60 via-zinc-900 to-zinc-900 border border-emerald-500/30 shadow-xl">
+            {/* TONIGHT'S LIVE REVENUE HERO CARD (Matches DJ Console tactile card) */}
+            <div className="rounded-[22px] bg-zinc-950 text-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-white/[0.08] space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                  Tonight&apos;s Club Commission
-                </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-white/[0.08] text-[11px] font-medium text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Tonight&apos;s Club Commission</span>
+                </span>
+                <span className="text-[12px] font-mono text-zinc-400 font-semibold bg-white/10 px-2 py-0.5 rounded-md">
                   {activeVenue.commissionSplit.venuePercentage}% Split
                 </span>
               </div>
 
-              <div className="mt-2 flex items-baseline gap-2">
-                <h2 className="text-3xl font-black tracking-tight text-white tabular-nums">
+              <div>
+                <div className="text-[11px] text-zinc-400 uppercase tracking-wider font-semibold">
+                  Club Host Earnings
+                </div>
+                <div className="text-3xl font-black text-emerald-400 tracking-tight tabular-nums mt-0.5">
                   ₦{venueCut.toLocaleString()}
-                </h2>
-                <span className="text-xs text-zinc-400 font-medium">earned tonight</span>
+                </div>
               </div>
 
               {/* Total Room Spend & Payout Split Chips */}
-              <div className="mt-4 pt-3.5 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
-                <div className="p-2 rounded-xl bg-white/[0.04]">
+              <div className="pt-3 border-t border-white/10 grid grid-cols-3 gap-2 text-center">
+                <div className="p-2.5 rounded-xl bg-white/[0.04]">
                   <span className="text-[10px] text-zinc-400 block font-medium">Gross Room Spend</span>
                   <span className="text-xs font-bold text-white tabular-nums">
                     ₦{totalGrossSpend.toLocaleString()}
                   </span>
                 </div>
 
-                <div className="p-2 rounded-xl bg-white/[0.04]">
-                  <span className="text-[10px] text-zinc-400 block font-medium">DJ Payout ({activeVenue.commissionSplit.djPercentage}%)</span>
-                  <span className="text-xs font-bold text-sky-400 tabular-nums">
+                <div className="p-2.5 rounded-xl bg-white/[0.04]">
+                  <span className="text-[10px] text-zinc-400 block font-medium">DJ Share ({activeVenue.commissionSplit.djPercentage}%)</span>
+                  <span className="text-xs font-bold text-emerald-400 tabular-nums">
                     ₦{djCut.toLocaleString()}
                   </span>
                 </div>
 
-                <div className="p-2 rounded-xl bg-white/[0.04]">
+                <div className="p-2.5 rounded-xl bg-white/[0.04]">
                   <span className="text-[10px] text-zinc-400 block font-medium">Platform ({activeVenue.commissionSplit.platformPercentage}%)</span>
                   <span className="text-xs font-bold text-zinc-400 tabular-nums">
                     ₦{platformFee.toLocaleString()}
@@ -161,29 +200,29 @@ export default function VenueOwnerMobilePortal() {
             </div>
 
             {/* LIVE RESIDENT DJ IN THE BUILDING */}
-            <div className="p-4 rounded-2xl bg-zinc-900 border border-white/[0.08] space-y-3">
+            <div className="rounded-2xl p-4 bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   Active Resident DJ
                 </span>
-                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   On Deck
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <img
-                  src={activeDj.avatarUrl}
-                  alt={activeDj.name}
-                  className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-500/40"
-                />
-                <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-bold text-white truncate">{activeDj.name}</h3>
-                  <p className="text-xs text-zinc-400 truncate">{activeDj.handle} &bull; Passcode: {activeDj.liveSession?.passcode || 'SKY99'}</p>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-zinc-900 to-zinc-700 dark:from-zinc-800 dark:to-zinc-600 flex items-center justify-center text-white font-bold text-sm ring-1 ring-black/[0.06] dark:ring-white/10 flex-shrink-0 shadow-sm">
+                  {activeDj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ'}
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-white tabular-nums block">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white truncate">{activeDj.name}</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                    {activeDj.handle} • Booth Code: <strong className="text-zinc-900 dark:text-white font-mono">{activeDj.liveSession?.passcode || 'SKY99'}</strong>
+                  </p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums block">
                     ₦{(activeDj.liveSession?.basePrice || 5000).toLocaleString()}
                   </span>
                   <span className="text-[10px] text-zinc-500 font-medium">base/song</span>
@@ -191,42 +230,47 @@ export default function VenueOwnerMobilePortal() {
               </div>
 
               {/* Performance Metrics */}
-              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs text-zinc-400">
-                <span>Accepted: <strong className="text-white">{acceptedCount}</strong> tracks</span>
-                <span>Queue Volume: <strong className="text-white">{venueRequests.length}</strong> submitted</span>
-                <span>Fulfillment: <strong className="text-emerald-400">{venueRequests.length > 0 ? Math.round((acceptedCount / venueRequests.length) * 100) : 100}%</strong></span>
+              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                <span>Accepted: <strong className="text-zinc-900 dark:text-white">{acceptedCount}</strong></span>
+                <span>Queue: <strong className="text-zinc-900 dark:text-white">{venueRequests.length}</strong></span>
+                <span>Fulfillment: <strong className="text-emerald-600 dark:text-emerald-400">{venueRequests.length > 0 ? Math.round((acceptedCount / venueRequests.length) * 100) : 100}%</strong></span>
               </div>
             </div>
 
             {/* LIVE TABLE REQUESTS STREAM */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
-                Live Table Requests Feed
-              </span>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Live Table Requests Stream
+                </span>
+                <span className="text-xs text-zinc-400 font-medium tabular-nums">
+                  {venueRequests.length} total
+                </span>
+              </div>
 
               {venueRequests.length === 0 ? (
-                <div className="p-6 rounded-2xl bg-zinc-900/60 border border-white/[0.06] text-center text-xs text-zinc-500">
-                  No song requests placed yet tonight. Guests will appear as they scan table QR codes.
+                <div className="p-8 rounded-2xl bg-zinc-50/60 dark:bg-zinc-900/60 border border-black/[0.06] dark:border-zinc-800/80 text-center text-xs text-zinc-500">
+                  No song requests placed yet tonight. Guests will appear in real time as they scan table QR codes.
                 </div>
               ) : (
-                <div className="divide-y divide-white/[0.06] rounded-2xl bg-zinc-900 border border-white/[0.08] overflow-hidden">
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
                   {venueRequests.map((req) => (
-                    <div key={req.id} className="p-3.5 flex items-center justify-between gap-3">
+                    <div key={req.id} className="p-3.5 flex items-center justify-between gap-3 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-white truncate">{req.song.title}</span>
-                          <span className="text-[10px] text-zinc-400">{req.song.artist}</span>
+                          <span className="text-xs font-bold text-zinc-900 dark:text-white truncate">{req.song.title}</span>
+                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">• {req.song.artist}</span>
                         </div>
-                        <div className="text-[11px] text-zinc-400 mt-0.5 truncate">
-                          Guest: <strong className="text-zinc-300">{req.guestName}</strong> &bull; {req.status.toUpperCase()}
+                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+                          Guest: <strong className="text-zinc-800 dark:text-zinc-200">{req.guestName}</strong> • <span className="uppercase text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">{req.status}</span>
                         </div>
                       </div>
 
                       <div className="text-right flex-shrink-0">
-                        <span className="text-xs font-bold text-white tabular-nums block">
+                        <span className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums block">
                           ₦{req.total.toLocaleString()}
                         </span>
-                        <span className="text-[10px] text-emerald-400 font-semibold">
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                           +₦{Math.round(req.total * (activeVenue.commissionSplit.venuePercentage / 100)).toLocaleString()} club cut
                         </span>
                       </div>
@@ -239,28 +283,30 @@ export default function VenueOwnerMobilePortal() {
         )}
 
         {activeTab === 'sessions' && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-zinc-900 border border-white/[0.08] space-y-2.5">
-              <h3 className="text-sm font-bold text-white">DJ Rotation & Performance</h3>
-              <p className="text-xs text-zinc-400 leading-relaxed">
-                Review the performers scheduled at {activeVenue.name} and their guest satisfaction metrics.
+          <div className="space-y-3">
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-1">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Resident DJ Roster</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Review performers scheduled at {activeVenue.name} and their guest satisfaction ratings.
               </p>
             </div>
 
-            <div className="divide-y divide-white/[0.06] rounded-2xl bg-zinc-900 border border-white/[0.08] overflow-hidden">
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
               {djs.map((dj) => (
-                <div key={dj.id} className="p-4 flex items-center justify-between">
+                <div key={dj.id} className="p-3.5 flex items-center justify-between hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                   <div className="flex items-center gap-3">
-                    <img src={dj.avatarUrl} alt={dj.name} className="w-10 h-10 rounded-xl object-cover" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-zinc-800 to-zinc-600 flex items-center justify-center text-white font-bold text-xs ring-1 ring-black/[0.06] dark:ring-white/10 flex-shrink-0">
+                      {dj.name?.replace(/DJ\s*/i, '').slice(0, 2).toUpperCase() || 'DJ'}
+                    </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white">{dj.name}</h4>
-                      <p className="text-[11px] text-zinc-400">{dj.genres.slice(0, 2).join(', ')}</p>
+                      <h4 className="text-xs font-bold text-zinc-900 dark:text-white">{dj.name}</h4>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{dj.genres.slice(0, 2).join(', ') || 'Afrobeats, Amapiano'}</p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xs font-bold text-amber-400 block">★ {dj.rating}</span>
-                    <span className="text-[10px] text-zinc-500 font-medium">{dj.totalSets} club sets</span>
+                    <span className="text-xs font-bold text-amber-500 block">★ {dj.rating || '5.0'}</span>
+                    <span className="text-[10px] text-zinc-500 font-medium">{dj.totalSets || 12} sets</span>
                   </div>
                 </div>
               ))}
@@ -271,61 +317,91 @@ export default function VenueOwnerMobilePortal() {
         {activeTab === 'payouts' && (
           <div className="space-y-4">
             {/* BANK ACCOUNT CARD */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/[0.12] space-y-3">
+            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   Settlement Account
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                   <CheckCircle2 className="w-3 h-3" />
-                  Verified
+                  Verified Payout Rail
                 </span>
               </div>
 
-              <div>
-                <span className="text-lg font-black text-white block tracking-wider">
-                  {activeVenue.bankDetails.accountNumber}
-                </span>
-                <p className="text-xs text-zinc-300 font-semibold mt-0.5">
-                  {activeVenue.bankDetails.accountName}
-                </p>
-                <p className="text-[11px] text-zinc-400">
-                  {activeVenue.bankDetails.bankName}
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400">
-                <span>Daily Payout Window:</span>
-                <span className="text-white font-bold">6:00 AM Sweep</span>
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white">GTBank Nigeria •••• 9104</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Automated settlement every Monday 06:00 AM WAT</p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+                  <Landmark className="w-4 h-4" />
+                </div>
               </div>
             </div>
 
-            {/* LIFETIME METRICS */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-4 rounded-2xl bg-zinc-900 border border-white/[0.08]">
-                <span className="text-[11px] text-zinc-400 block font-medium">All-Time GMV</span>
-                <span className="text-base font-bold text-white tabular-nums mt-1 block">
-                  ₦{activeVenue.totalRevenueGenerated.toLocaleString()}
-                </span>
-              </div>
-              <div className="p-4 rounded-2xl bg-zinc-900 border border-white/[0.08]">
-                <span className="text-[11px] text-zinc-400 block font-medium">Total Club Cut Paid</span>
-                <span className="text-base font-bold text-emerald-400 tabular-nums mt-1 block">
-                  ₦{activeVenue.totalCommissionPaid.toLocaleString()}
-                </span>
+            {/* COMMISSION SPLIT AGREEMENT */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+              <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                Multi-Party Split Configuration
+              </h4>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-zinc-600 dark:text-zinc-400">Club Venue Cut</span>
+                  <span className="font-bold text-zinc-900 dark:text-white">{activeVenue.commissionSplit.venuePercentage}%</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="text-zinc-600 dark:text-zinc-400">Resident DJ Payout</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{activeVenue.commissionSplit.djPercentage}%</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-t border-zinc-100 dark:border-zinc-800">
+                  <span className="text-zinc-600 dark:text-zinc-400">QueMyDJ Platform Maintenance</span>
+                  <span className="font-bold text-zinc-500">{activeVenue.commissionSplit.platformPercentage}%</span>
+                </div>
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* QUICK FOOTER NAVIGATION FOR VENUE MANAGER */}
-      <footer className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] h-14 bg-zinc-950/95 backdrop-blur-xl border-t border-white/10 px-6 flex items-center justify-between text-xs z-30">
-        <Link href="/" className="text-zinc-400 hover:text-white transition-colors">
-          &larr; Guest View
-        </Link>
-        <Link href="/admin" className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
-          Super-Admin Console &rarr;
+      {/* 4. BOTTOM NAVIGATION BAR (Aligned with DJ Queue & Guest Nav) */}
+      <footer className="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-white/95 dark:bg-[#0c0d10]/95 backdrop-blur-xl border-t border-zinc-200 dark:border-zinc-800 h-16 px-6 flex items-center justify-around z-30">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${
+            activeTab === 'overview' ? 'text-zinc-950 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+          }`}
+        >
+          <DollarSign className="w-5 h-5" />
+          <span>Live Spend</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('sessions')}
+          className={`flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${
+            activeTab === 'sessions' ? 'text-zinc-950 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+          }`}
+        >
+          <Headphones className="w-5 h-5" />
+          <span>DJs</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('payouts')}
+          className={`flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors ${
+            activeTab === 'payouts' ? 'text-zinc-950 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+          }`}
+        >
+          <Landmark className="w-5 h-5" />
+          <span>Settlement</span>
+        </button>
+
+        <Link
+          href="/login"
+          className="flex flex-col items-center gap-1 text-[11px] font-semibold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+        >
+          <Users className="w-5 h-5" />
+          <span>Switch</span>
         </Link>
       </footer>
     </div>

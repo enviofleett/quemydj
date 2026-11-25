@@ -12,7 +12,7 @@ export const DemoBanner: React.FC = () => {
   const handleRoleSwitch = (newRole: 'guest' | 'dj') => {
     setUserRole(newRole);
     if (newRole === 'dj') {
-      router.push('/dj/queue');
+      router.push('/dj/workstation');
     } else {
       router.push('/discover');
     }

@@ -11,6 +11,15 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({ children })
   const isAdmin = pathname.startsWith('/admin');
   const isVenue = pathname.startsWith('/venue');
   const isDJArea = pathname.startsWith('/dj');
+  const isLandingPage = pathname === '/';
+
+  if (isLandingPage) {
+    return (
+      <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#070709] text-zinc-100 font-sans">
+        {children}
+      </div>
+    );
+  }
 
   if (isAdmin) {
     return (
@@ -39,10 +48,8 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({ children })
   return (
     <div
       className={`w-full min-h-[100dvh] flex flex-col relative transition-colors duration-300 ${
-        isWorkstation
+        isDJArea
           ? 'bg-[var(--dj-bg-root)] text-[var(--dj-text-primary)] pb-0'
-          : isDJArea
-          ? 'max-w-[430px] lg:max-w-[1540px] mx-auto bg-white dark:bg-[#0c0d10] text-zinc-950 dark:text-zinc-100 pb-16 lg:pb-0 border-x border-zinc-200 dark:border-zinc-800 shadow-2xl'
           : 'max-w-[430px] mx-auto bg-white dark:bg-[#090a0d] text-zinc-950 dark:text-zinc-100 pb-24 border-x border-black/[0.08] dark:border-zinc-800/80 shadow-2xl'
       }`}
     >
