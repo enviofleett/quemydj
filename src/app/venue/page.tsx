@@ -53,6 +53,29 @@ interface SavedVenueBank {
   verified: boolean;
 }
 
+// Dedicated Naira (₦) Vector Icon matching Lucide icon specifications (24x24 viewBox, stroke-width 2, stroke-linecap round)
+function NairaIcon({ className = 'w-5 h-5' }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      {/* N vertical bars and diagonal */}
+      <path d="M6 4v16" />
+      <path d="M18 4v16" />
+      <path d="M6 4l12 16" />
+      {/* Double currency crossbars */}
+      <path d="M4 10h16" />
+      <path d="M4 14h16" />
+    </svg>
+  );
+}
+
 export default function VenueOwnerPortalPage() {
   const router = useRouter();
   const { venues, activeVenue, setActiveVenueId, requests, djs, themeMode, toggleThemeMode } = useCueApp();
@@ -896,7 +919,7 @@ export default function VenueOwnerPortalPage() {
             activeTab === 'revenue' ? 'text-zinc-950 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
           }`}
         >
-          <DollarSign className="w-5 h-5" />
+          <NairaIcon className="w-5 h-5" />
           <span>Revenue</span>
         </button>
 
