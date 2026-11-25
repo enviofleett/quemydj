@@ -27,13 +27,13 @@ export const MobileFooterNav: React.FC = () => {
   // Registered users unlock Wallet, Requests, and Profile
   const guestTabs = currentUser?.isRegistered
     ? [
-        { label: 'Connect', href: '/', icon: QrCode },
+        { label: 'Connect', href: '/booth', icon: QrCode },
         { label: 'Wallet', href: '/wallet', icon: Wallet },
         { label: 'Requests', href: '/requests', icon: ListMusic, badge: activeCount > 0 ? activeCount : null },
         { label: 'Profile', href: '/profile', icon: User },
       ]
     : [
-        { label: 'Connect', href: '/', icon: QrCode },
+        { label: 'Connect', href: '/booth', icon: QrCode },
         { label: 'Sign In', href: '/login', icon: User },
       ];
 

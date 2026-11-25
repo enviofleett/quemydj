@@ -19,9 +19,9 @@ export const GuestNav: React.FC = () => {
     ? [
         {
           label: 'Connect',
-          href: '/',
+          href: '/booth',
           icon: QrCode,
-          match: ['/'],
+          match: ['/booth'],
         },
         {
           label: 'Wallet',
@@ -46,9 +46,9 @@ export const GuestNav: React.FC = () => {
     : [
         {
           label: 'Connect',
-          href: '/',
+          href: '/booth',
           icon: QrCode,
-          match: ['/'],
+          match: ['/booth'],
         },
         {
           label: 'Sign In',
