@@ -544,25 +544,6 @@ export default function VenueOwnerPortalPage() {
               </div>
             )}
 
-            {/* COMMISSION SPLIT HERO / NOTICE */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-zinc-900 to-zinc-950 text-white border border-zinc-800 shadow-md space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">
-                  <Percent className="w-3 h-3" />
-                  {activeVenue.commissionSplit?.venuePercentage || 20}% Club Earnings Split
-                </span>
-                <span className="text-[11px] text-zinc-400">
-                  Paystack Auto-Split
-                </span>
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">How Resident DJ Monetization Works</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed mt-1">
-                  Every DJ registered to {activeVenue.name} accepts live guest song requests. Every completed request automatically splits: <strong>{activeVenue.commissionSplit?.venuePercentage || 20}% to your Club Account</strong>, <strong>{activeVenue.commissionSplit?.djPercentage || 70}% directly to the DJ</strong>, and <strong>10% to QueMyDJ platform rails</strong>.
-                </p>
-              </div>
-            </div>
-
             {/* HEADER WITH ONBOARD BUTTON */}
             <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] flex items-center justify-between gap-3">
               <div>
