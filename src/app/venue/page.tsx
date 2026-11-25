@@ -284,40 +284,7 @@ export default function VenueOwnerPortalPage() {
         </div>
       </header>
 
-      {/* 2. NATIVE CONSOLE SEGMENTED TABS */}
-      <div className="px-5 pt-3 pb-1">
-        <div
-          role="tablist"
-          className="grid grid-cols-4 p-1 bg-zinc-100 dark:bg-zinc-900 border border-transparent dark:border-zinc-800/80 rounded-xl"
-        >
-          {[
-            { id: 'revenue', label: 'Revenue' },
-            { id: 'djs', label: 'Resident DJs' },
-            { id: 'settlement', label: 'Settlement' },
-            { id: 'settings', label: 'Profile' },
-          ].map((tab) => {
-            const isCurrent = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={isCurrent}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`h-8 rounded-[9px] text-[12px] tabular-nums transition-all flex items-center justify-center ${
-                  isCurrent
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white font-semibold shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
-                    : 'text-zinc-500 dark:text-zinc-400 font-medium hover:text-zinc-800 dark:hover:text-zinc-200'
-                }`}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. TAB CONTENT */}
+      {/* 2. TAB CONTENT */}
       <main className="px-5 pt-3 pb-24 space-y-4">
         {/* TAB 1: REVENUE (Renamed from Live Spend with Day/Week/Month Filter) */}
         {activeTab === 'revenue' && (
