@@ -331,7 +331,7 @@ export default function LoginPage() {
             </Link>
 
             <Link
-              href="/"
+              href="/booth"
               className="text-xs font-medium text-white/70 hover:text-white transition-colors px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md"
             >
               Skip as guest &rarr;
@@ -680,24 +680,12 @@ export default function LoginPage() {
                   </button>
                 </form>
               )}
-
-              {/* Demo DJ Direct Access */}
-              <div className="pt-2 border-t border-black/5 text-center">
-                <button
-                  type="button"
-                  onClick={handleDemoDjInstantLogin}
-                  className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Disc3 className="w-4 h-4 text-emerald-600 animate-spin" style={{ animationDuration: '6s' }} />
-                  <span>One-Click Demo Resident DJ (Kofi Beats)</span>
-                </button>
-              </div>
             </div>
 
             {/* Quick Guest Skip */}
             <div className="text-center">
               <Link
-                href="/"
+                href="/booth"
                 className="text-xs text-[#5e584a] hover:text-[#07241b] font-medium underline transition-colors"
               >
                 Skip sign in and explore as guest &rarr;
@@ -731,7 +719,7 @@ export default function LoginPage() {
                 QueMyDJ
               </span>
               <Link
-                href="/"
+                href="/booth"
                 className="text-xs font-medium text-white/70 hover:text-white transition-colors"
               >
                 Skip as guest

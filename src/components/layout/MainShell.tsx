@@ -15,7 +15,7 @@ export const MainShell: React.FC<{ children: React.ReactNode }> = ({ children })
 
   if (isLandingPage) {
     return (
-      <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#070709] text-zinc-100 font-sans">
+      <div className="w-full min-h-[100dvh] flex flex-col relative bg-[#fafafa] text-zinc-900 font-sans">
         {children}
       </div>
     );

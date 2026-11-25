@@ -2,32 +2,36 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowUpRight, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, ArrowRight, Sparkles, Flame, Music2, Disc3 } from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#070709] text-zinc-100 selection:bg-emerald-500 selection:text-black flex flex-col font-sans relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#fcfcfd] text-zinc-900 selection:bg-emerald-500 selection:text-white flex flex-col font-sans relative overflow-x-hidden">
       
-      {/* RICH NIGHTLIFE & MUSIC BACKGROUND LAYER */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        {/* Real authentic DJ & club atmosphere photography */}
+      {/* VIBRANT, WARM SOCIAL LIGHT-MODE BACKGROUND */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Full rich festival & DJ club crowd photography in vibrant high visibility */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.62] scale-100 transform-gpu"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.38] scale-100 transform-gpu"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=85&w=2200&auto=format&fit=crop')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=90&w=2400&auto=format&fit=crop')`,
           }}
         />
-        {/* Subtle, balanced vignette & gradient so text is crisp while crowd & DJ lighting pop */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070709] via-[#070709]/50 to-[#070709]/60" />
-        <div className="absolute inset-0 bg-radial from-transparent via-[#070709]/30 to-[#070709]/80" />
+        {/* Soft radial brightness glow around center to keep text punchy while stage lights shine through */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#fcfcfd]/90 via-[#fcfcfd]/25 to-[#fcfcfd]/75" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(252,252,253,0.65)_0%,_transparent_75%)]" />
+        
+        {/* Vibrant club & stage ambient color boosts */}
+        <div className="absolute -top-32 left-1/4 w-[600px] h-[500px] bg-emerald-400/20 blur-[130px] rounded-full" />
+        <div className="absolute top-[40%] -right-20 w-[550px] h-[550px] bg-purple-400/20 blur-[140px] rounded-full" />
+        <div className="absolute bottom-10 left-10 w-[500px] h-[500px] bg-amber-300/20 blur-[140px] rounded-full" />
       </div>
 
-      {/* TOP HEADER WITH OFFICIAL QueMyDJ LOGO */}
-      <header className="relative z-20 border-b border-white/[0.08] bg-[#070709]/70 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-black flex items-center justify-center flex-shrink-0 shadow-md border border-white/10 group-hover:border-emerald-500/40 transition-colors">
+      {/* TOP HEADER */}
+      <header className="relative z-20 border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-0 transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 h-18 sm:h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-zinc-950 flex items-center justify-center flex-shrink-0 shadow-md border border-black/5 group-hover:scale-105 transition-transform">
               <img
                 src="/brand-logo-transparent.png"
                 alt="QueMyDJ Logo"
@@ -35,157 +39,162 @@ export default function LandingPage() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-white leading-tight">QueMyDJ</span>
-              <span className="text-[10px] font-semibold tracking-wider text-zinc-400 uppercase">Powered by Zenbeatz</span>
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-zinc-950 leading-tight">QueMyDJ</span>
+              <span className="text-[9px] sm:text-[10px] font-bold tracking-wider text-emerald-700 uppercase">Powered by Zenbeatz</span>
             </div>
           </Link>
 
           {/* Direct Dual Login in Header */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/login?role=dj"
-              className="text-xs sm:text-sm font-semibold tracking-wide px-4 py-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/[0.06] transition-all"
+              className="text-xs sm:text-sm font-semibold tracking-wide px-3 sm:px-4 py-2 rounded-full text-zinc-700 hover:text-black hover:bg-black/[0.04] transition-all"
             >
               DJ Portal
             </Link>
             <Link
               href="/login?role=guest"
-              className="text-xs sm:text-sm font-bold tracking-wide px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 transition-all shadow-lg"
+              className="text-xs sm:text-sm font-bold tracking-wide px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 transition-all shadow-md shadow-black/10 active:scale-95"
             >
-              Clubber Sign In
+              Sign In
             </Link>
           </div>
         </div>
       </header>
 
-      {/* HERO SECTION */}
-      <main className="relative z-10 flex-1 flex flex-col justify-center max-w-5xl mx-auto px-5 sm:px-8 py-16 sm:py-24 w-full">
-        <div className="max-w-3xl mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.1] text-zinc-300 text-xs font-medium uppercase tracking-wider mb-6">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Social Nightlife & Venue Playlist Engine
-          </div>
-
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.05] mb-6">
-            The Crowd Takes Over The Booth.
-          </h1>
-
-          <p className="text-lg sm:text-xl text-zinc-300 font-normal leading-relaxed max-w-2xl">
-            QueMyDJ bridges the gap between the DJ decks and the dancefloor. Request songs, boost priority with tips, and follow the live set queue without interrupting the mix.
-          </p>
+      {/* HERO SECTION - SWEET, VIBRANT, CENTERED */}
+      <main className="relative z-10 flex-1 flex flex-col justify-center items-center max-w-5xl mx-auto px-4 sm:px-8 py-12 sm:py-20 w-full text-center">
+        
+        {/* Soft Pill Badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/70 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-6 shadow-xs">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          The Social Playlist Takeover
         </div>
 
-        {/* TWO PRIMARY PORTAL CARDS: CLUBGOERS & DJS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full">
+        {/* Crisp Central Headline */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-zinc-950 leading-[1.08] mb-6 max-w-4xl mx-auto">
+          You Are The Party.{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700">
+            Take Over The Playlist.
+          </span>
+        </h1>
+
+        {/* Clean, Conversational Subcopy */}
+        <p className="text-base sm:text-xl text-zinc-600 font-normal leading-relaxed max-w-2xl mx-auto mb-10 sm:mb-14 px-2">
+          Why wait on the DJ? You and your crew are the life of the party. Use tokens to drop your favorite anthems, steer the club’s vibe, and hear your songs played live.
+        </p>
+
+        {/* TWO PRIMARY PORTAL CARDS: SOCIAL GOERS & DJS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl text-left">
           
-          {/* Card 1: Clubgoers */}
-          <div className="group relative rounded-3xl bg-zinc-900/60 border border-white/[0.08] hover:border-emerald-500/50 p-7 sm:p-9 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-2xl backdrop-blur-xl">
+          {/* Card 1: Social Goers */}
+          <div className="group relative rounded-3xl bg-white border border-zinc-200/80 hover:border-emerald-500/50 p-7 sm:p-9 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-emerald-500/5">
             <div 
-              className="absolute top-0 right-0 w-72 h-72 bg-cover bg-center opacity-15 group-hover:opacity-25 transition-opacity rounded-bl-full pointer-events-none"
+              className="absolute top-0 right-0 w-64 h-64 bg-cover bg-center opacity-15 group-hover:opacity-25 transition-opacity rounded-bl-full pointer-events-none"
               style={{
                 backgroundImage: `url('https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800&auto=format&fit=crop')`,
               }}
             />
             
             <div className="relative z-10">
-              <span className="inline-block text-xs uppercase tracking-widest font-bold text-emerald-400 mb-3">
-                For Guests & Clubgoers
+              <span className="inline-block text-[11px] sm:text-xs uppercase tracking-widest font-black text-emerald-600 mb-2 sm:mb-3">
+                For Social Goers & Guests
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">
-                Hear Your Track Next.
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight mb-2 sm:mb-3">
+                Steer The Vibe Tonight.
               </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-8">
-                Connect to the active DJ booth, search songs, attach shoutouts for your crew, and track the queue in real-time as your song approaches.
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed mb-6 sm:mb-8 font-normal">
+                Connect to the venue's active DJ booth. Use tokens to request your tracks, attach crew shoutouts, and jump the queue so your song drops when the energy is peaked.
               </p>
             </div>
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-white/[0.06]">
+            <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-5 border-t border-zinc-100">
               <Link
                 href="/booth"
-                className="flex-1 py-3.5 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm text-center transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                className="flex-1 py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 active:scale-[0.98]"
               >
                 <span>Find Live Booth</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/login?role=guest"
-                className="py-3.5 px-5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 font-semibold text-sm text-center transition-all border border-white/[0.08] flex items-center justify-center gap-1.5"
+                className="py-3.5 px-5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs sm:text-sm text-center transition-all border border-zinc-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
               >
                 <span>Guest Sign In</span>
-                <ArrowUpRight className="w-4 h-4 text-zinc-400" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
               </Link>
             </div>
           </div>
 
           {/* Card 2: DJs */}
-          <div className="group relative rounded-3xl bg-zinc-900/60 border border-white/[0.08] hover:border-white/30 p-7 sm:p-9 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-2xl backdrop-blur-xl">
+          <div className="group relative rounded-3xl bg-white border border-zinc-200/80 hover:border-zinc-950/40 p-7 sm:p-9 transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xl hover:shadow-2xl hover:shadow-black/5">
             <div 
-              className="absolute top-0 right-0 w-72 h-72 bg-cover bg-center opacity-15 group-hover:opacity-25 transition-opacity rounded-bl-full pointer-events-none"
+              className="absolute top-0 right-0 w-64 h-64 bg-cover bg-center opacity-15 group-hover:opacity-25 transition-opacity rounded-bl-full pointer-events-none"
               style={{
                 backgroundImage: `url('https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=800&auto=format&fit=crop')`,
               }}
             />
 
             <div className="relative z-10">
-              <span className="inline-block text-xs uppercase tracking-widest font-bold text-zinc-300 mb-3">
+              <span className="inline-block text-[11px] sm:text-xs uppercase tracking-widest font-black text-zinc-800 mb-2 sm:mb-3">
                 For DJs & Selectors
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">
-                Monetize The Booth.
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-950 tracking-tight mb-2 sm:mb-3">
+                Monetize The Floor.
               </h2>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-8">
-                Screen incoming song requests, set minimum tip thresholds, filter off-vibe submissions, and keep the dancefloor energized without distraction.
+              <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed mb-6 sm:mb-8 font-normal">
+                Take song requests without distraction. Earn tokens on every request and priority drop, screen tracks to match your set, and keep your crowd hyped all night.
               </p>
             </div>
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-white/[0.06]">
+            <div className="relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-5 border-t border-zinc-100">
               <Link
-                href="/dj/workstation"
-                className="flex-1 py-3.5 px-6 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-sm text-center transition-all flex items-center justify-center gap-2 shadow-lg"
+                href="/dj"
+                className="flex-1 py-3.5 px-5 rounded-2xl bg-zinc-950 hover:bg-zinc-800 text-white font-extrabold text-xs sm:text-sm text-center transition-all flex items-center justify-center gap-2 shadow-md shadow-black/15 active:scale-[0.98]"
               >
                 <span>Open DJ Workstation</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/login?role=dj"
-                className="py-3.5 px-5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-zinc-200 font-semibold text-sm text-center transition-all border border-white/[0.08] flex items-center justify-center gap-1.5"
+                className="py-3.5 px-5 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-bold text-xs sm:text-sm text-center transition-all border border-zinc-200 flex items-center justify-center gap-1.5 active:scale-[0.98]"
               >
                 <span>DJ Login</span>
-                <ArrowUpRight className="w-4 h-4 text-zinc-400" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
               </Link>
             </div>
           </div>
 
         </div>
 
-        {/* SOCIAL STATS BAR */}
-        <div className="mt-14 pt-10 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-6 text-zinc-400 text-sm">
-          <div className="flex items-center gap-3">
-            <span className="text-white font-bold text-base">Over 120+ Active Clubs & Venues</span>
-            <span className="hidden sm:inline text-zinc-600">•</span>
-            <span className="hidden sm:inline">Lagos • London • New York • Accra</span>
+        {/* SOCIAL CROWD STATS STRIP */}
+        <div className="mt-12 sm:mt-16 pt-8 sm:pt-10 border-t border-zinc-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 w-full max-w-4xl text-zinc-500 text-xs sm:text-sm">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500" />
+            <span className="text-zinc-900 font-bold">Active in 120+ Clubs, Lounges & Events</span>
           </div>
-          <div className="flex items-center gap-6 text-xs text-zinc-400">
-            <span>Instant Mobile Booth Connect</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-zinc-500 font-medium">
+            <span>Instant Token Requests</span>
             <span>•</span>
             <span>Live Queue ETA</span>
             <span>•</span>
-            <span>Zero Hardware Setup</span>
+            <span>Direct DJ Booth Connect</span>
           </div>
         </div>
+
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-10 border-t border-white/[0.06] bg-[#070709] py-8">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400">
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-400">QueMyDJ</span>
-            <span>— Powered by Zenbeatz. All rights reserved.</span>
+      <footer className="relative z-10 border-t border-zinc-200/80 bg-white py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 text-center sm:text-left">
+          <div>
+            <span className="text-zinc-900 font-bold">QueMyDJ</span>
+            <span> — Powered by Zenbeatz. All rights reserved.</span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="/booth" className="hover:text-zinc-200 transition-colors">Booth Scanner</Link>
-            <Link href="/login" className="hover:text-zinc-200 transition-colors">Authentication</Link>
-            <Link href="/dj/workstation" className="hover:text-zinc-200 transition-colors">DJ Workstation</Link>
+          <div className="flex items-center gap-5 sm:gap-6 font-medium">
+            <Link href="/booth" className="hover:text-zinc-950 transition-colors">Booth Scanner</Link>
+            <Link href="/login" className="hover:text-zinc-950 transition-colors">Sign In</Link>
+            <Link href="/dj" className="hover:text-zinc-950 transition-colors">DJ Workspace</Link>
           </div>
         </div>
       </footer>
