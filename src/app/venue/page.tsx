@@ -44,7 +44,13 @@ import {
   Zap,
   Disc3,
   Flame,
-  Star
+  Star,
+  User,
+  ExternalLink,
+  Receipt,
+  Download,
+  Copy,
+  BadgeCheck
 } from 'lucide-react';
 
 interface BankOption {
@@ -777,25 +783,80 @@ export default function VenueOwnerPortalPage() {
         {activeTab === 'settlement' && (
           <div className="space-y-4">
             {bankSaveNotice && (
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[12px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{bankSaveNotice}</span>
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[12px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>{bankSaveNotice}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBankSaveNotice(null)}
+                  className="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
-            {/* BANK ACCOUNT CARD WITH DIRECT EDIT ACTION */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Settlement Bank Account
+            {/* TOTAL SETTLED PAYOUTS HERO CARD (Military Green Tone matching Active DJ card) */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-[#27382b] via-[#1e2c21] to-[#152018] text-white p-5 border border-[#445d49]/60 shadow-[0_8px_28px_-6px_rgba(30,44,33,0.45)] overflow-hidden space-y-4">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
+              
+              {/* Speaker diaphragm ambient background */}
+              <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-emerald-400/[0.08] blur-2xl pointer-events-none" />
+
+              <div className="relative z-10 flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/15 text-white border border-white/20 backdrop-blur-sm shadow-sm">
+                  <BadgeCheck className="w-3 h-3 text-emerald-300" />
+                  Direct Paystack Clearing
                 </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Verified Paystack Rail
+                <span className="text-[11px] font-mono text-white/70">
+                  Weekly Automated Payouts
                 </span>
               </div>
 
-              <div className="flex items-start justify-between pt-1 gap-3">
+              <div className="relative z-10">
+                <span className="text-[11px] text-white/70 uppercase tracking-wider font-medium block">
+                  Total Settled to Bank Account
+                </span>
+                <div className="text-3xl font-black text-white tracking-tight tabular-nums mt-0.5 font-mono">
+                  ₦248,500
+                </div>
+                <p className="text-[11px] text-white/60 mt-1">
+                  Transferred directly to {savedBank.bankName} ({savedBank.accountNumber.slice(-4)})
+                </p>
+              </div>
+
+              {/* Quick payout highlights strip */}
+              <div className="relative z-10 pt-3 border-t border-white/15 grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider block">Next Scheduled Payout</span>
+                  <span className="font-bold text-white mt-0.5 block">Monday 06:00 AM WAT</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider block">Pending Processing</span>
+                  <span className="font-bold text-emerald-300 font-mono mt-0.5 block">₦{venueCut > 0 ? venueCut.toLocaleString() : '14,200'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* SETTLEMENT BANK ACCOUNT CARD */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Settlement Destination
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsBankModalOpen(true)}
+                  className="px-2.5 py-1 rounded-lg bg-[#27382b] hover:bg-[#1e2c21] text-white text-[11px] font-bold flex items-center gap-1 transition-all border border-[#445d49]/70 cursor-pointer"
+                >
+                  <Pencil className="w-2.5 h-2.5 text-emerald-300" />
+                  <span>Edit Bank</span>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
                 <div>
                   <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
                     {savedBank.bankName}
@@ -803,48 +864,101 @@ export default function VenueOwnerPortalPage() {
                   <p className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 mt-0.5">
                     Account: {savedBank.accountNumber} • {savedBank.accountName}
                   </p>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                    Direct automated settlement every Monday 06:00 AM WAT via Paystack.
-                  </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsBankModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 transition-colors cursor-pointer shrink-0"
-                >
-                  <Pencil className="w-3 h-3" />
-                  <span>Edit Bank</span>
-                </button>
-              </div>
-            </div>
-
-            {/* COMMISSION SPLIT AGREEMENT */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
-              <h4 className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                Multi-Party Split Configuration
-              </h4>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-zinc-600 dark:text-zinc-400">Club Venue Cut</span>
-                  <span className="font-bold text-zinc-900 dark:text-white">{activeVenue.commissionSplit.venuePercentage}%</span>
-                </div>
-                <div className="flex justify-between items-center py-1 border-t border-zinc-100 dark:border-zinc-800">
-                  <span className="text-zinc-600 dark:text-zinc-400">Resident DJ Payout</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{activeVenue.commissionSplit.djPercentage}%</span>
-                </div>
-                <div className="flex justify-between items-center py-1 border-t border-zinc-100 dark:border-zinc-800">
-                  <span className="text-zinc-600 dark:text-zinc-400">QueMyDJ Platform Maintenance</span>
-                  <span className="font-bold text-zinc-500">{activeVenue.commissionSplit.platformPercentage}%</span>
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <Landmark className="w-4 h-4" />
                 </div>
               </div>
             </div>
 
-            {/* COMPLIANCE & LEGAL NOTICE */}
-            <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            {/* PAYSTACK PAYOUTS HISTORY */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
+                  Paystack Payout Records
+                </h4>
+                <span className="text-[11px] text-zinc-400">
+                  Past 30 Days
+                </span>
+              </div>
+
+              <div className="divide-y divide-zinc-100 dark:divide-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] overflow-hidden">
+                {[
+                  {
+                    id: 'pstk-99120',
+                    date: 'Yesterday, 06:00 AM',
+                    amount: 48200,
+                    reference: 'TRF_ven_9812902',
+                    status: 'Transferred',
+                    period: 'Sunday Night Sets (DJ HyperSonic)'
+                  },
+                  {
+                    id: 'pstk-99119',
+                    date: '17 Nov 2026, 06:00 AM',
+                    amount: 86400,
+                    reference: 'TRF_ven_8829103',
+                    status: 'Transferred',
+                    period: 'Weekend Club Nights (3 DJs)'
+                  },
+                  {
+                    id: 'pstk-99118',
+                    date: '10 Nov 2026, 06:00 AM',
+                    amount: 62000,
+                    reference: 'TRF_ven_7719201',
+                    status: 'Transferred',
+                    period: 'AfroBeats Saturday Special'
+                  },
+                  {
+                    id: 'pstk-99117',
+                    date: '03 Nov 2026, 06:00 AM',
+                    amount: 51900,
+                    reference: 'TRF_ven_6628104',
+                    status: 'Transferred',
+                    period: 'Halloween Club Weekend'
+                  }
+                ].map((payout) => (
+                  <div key={payout.id} className="p-3.5 flex items-center justify-between hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                        <ArrowUpRight className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h5 className="text-xs font-bold text-zinc-900 dark:text-white">
+                            ₦{payout.amount.toLocaleString()}
+                          </h5>
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                            <Check className="w-2.5 h-2.5" />
+                            {payout.status}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          {payout.period}
+                        </p>
+                        <span className="text-[10px] font-mono text-zinc-400">
+                          {payout.reference} • {payout.date}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 block">
+                        GTBank
+                      </span>
+                      <span className="text-[10px] text-zinc-400">
+                        ••••9104
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AUDIT & SECURITY NOTICE */}
+            <div className="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
               <span>
-                All payouts are routed via regulated clearing banks and audited with encrypted HMAC signatures.
+                All payouts are routed via Paystack Dedicated Subaccounts and reconciled directly into your corporate bank ledger.
               </span>
             </div>
           </div>
@@ -854,65 +968,93 @@ export default function VenueOwnerPortalPage() {
         {activeTab === 'settings' && (
           <div className="space-y-4">
             {passwordNotice && (
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[12px] text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>{passwordNotice}</span>
+              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[12px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>{passwordNotice}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPasswordNotice(null)}
+                  className="text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
-            {/* VENUE IDENTITY CARD */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                  <Building2 className="w-6 h-6 text-emerald-400" />
+            {/* VENUE IDENTITY HERO CARD (Military Green VIP Palette) */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-[#27382b] via-[#1e2c21] to-[#152018] text-white p-5 border border-[#445d49]/60 shadow-[0_8px_28px_-6px_rgba(30,44,33,0.45)] overflow-hidden space-y-4">
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent" />
+              
+              <div className="relative z-10 flex items-center gap-3.5">
+                <div className="w-13 h-13 rounded-2xl bg-[#314535] border border-white/20 flex items-center justify-center text-white font-bold text-base flex-shrink-0 shadow-md">
+                  <Building2 className="w-6 h-6 text-emerald-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-zinc-900 dark:text-white leading-tight">
-                    {activeVenue.name}
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-white tracking-tight">
+                      {activeVenue.name}
+                    </h3>
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-300 bg-white/10 px-2 py-0.5 rounded-full border border-white/15">
+                      <ShieldCheck className="w-2.5 h-2.5" />
+                      VERIFIED
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/70 mt-0.5">
                     {activeVenue.city} • Registered Venue Host Account
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-xs">
+              <div className="relative z-10 grid grid-cols-2 gap-2 pt-3 border-t border-white/15 text-xs">
                 <div>
-                  <span className="text-[11px] text-zinc-400 block font-medium">Operator Portal ID</span>
-                  <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 block">{activeVenue.id}</span>
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider block font-medium">Operator Portal ID</span>
+                  <span className="font-mono font-bold text-white mt-0.5 block">{activeVenue.id}</span>
                 </div>
                 <div>
-                  <span className="text-[11px] text-zinc-400 block font-medium">Assigned Subaccount</span>
-                  <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 block">ACCT_VEN_{activeVenue.id.slice(-4).toUpperCase()}</span>
+                  <span className="text-[10px] text-white/60 uppercase tracking-wider block font-medium">Assigned Subaccount</span>
+                  <span className="font-mono font-bold text-emerald-300 mt-0.5 block">ACCT_VEN_{activeVenue.id.slice(-4).toUpperCase()}</span>
                 </div>
               </div>
             </div>
 
-            {/* BANK ACCOUNT QUICK EDIT LINK */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-2">
+            {/* SETTLEMENT BANK ACCOUNT DETAILS CARD */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
               <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
-                    Bank Account Information
-                  </h4>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    {savedBank.bankName} • {savedBank.accountNumber}
-                  </p>
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                    Settlement Bank Account
+                  </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsBankModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-black text-xs font-bold transition-colors cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-[#27382b] hover:bg-[#1e2c21] text-white text-[11px] font-bold flex items-center gap-1 transition-all border border-[#445d49]/70 cursor-pointer"
                 >
-                  Manage Bank
+                  <Pencil className="w-2.5 h-2.5 text-emerald-300" />
+                  <span>Manage Bank</span>
                 </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/60 space-y-1">
+                <h4 className="text-xs font-bold text-zinc-900 dark:text-white">
+                  {savedBank.bankName}
+                </h4>
+                <p className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">
+                  {savedBank.accountNumber} • {savedBank.accountName}
+                </p>
+                <p className="text-[10px] text-zinc-400 pt-0.5">
+                  Automated direct clearing via Paystack subaccount rails
+                </p>
               </div>
             </div>
 
-            {/* PASSWORD UPDATE FORM */}
-            <form onSubmit={handleChangePassword} className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+            {/* SECURITY & PASSWORD UPDATE FORM */}
+            <form onSubmit={handleChangePassword} className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
               <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-500" />
+                <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
                   Update Account Password
                 </h4>
@@ -928,7 +1070,7 @@ export default function VenueOwnerPortalPage() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full h-10 px-3 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -942,7 +1084,7 @@ export default function VenueOwnerPortalPage() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="At least 6 chars"
-                      className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full h-10 px-3 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
 
@@ -955,27 +1097,27 @@ export default function VenueOwnerPortalPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repeat password"
-                      className="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-full h-10 px-3 bg-zinc-100 dark:bg-zinc-800/80 border border-transparent dark:border-zinc-700/80 rounded-xl text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full h-9 rounded-xl bg-zinc-950 dark:bg-emerald-500 hover:bg-zinc-800 dark:hover:bg-emerald-400 text-white dark:text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                  className="w-full h-10 rounded-xl bg-[#27382b] hover:bg-[#1e2c21] text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1 border border-[#445d49]/70 shadow-sm"
                 >
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="w-3.5 h-3.5 text-emerald-300" />
                   <span>Update Password</span>
                 </button>
               </div>
             </form>
 
             {/* LEGAL & TERMS AND CONDITIONS */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+            <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900/60 border border-black/[0.08] dark:border-zinc-800/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] space-y-2.5">
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-emerald-500" />
+                <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
-                  Terms, Conditions &amp; Policies
+                  Terms &amp; Compliance Policy
                 </h4>
               </div>
 
@@ -986,7 +1128,7 @@ export default function VenueOwnerPortalPage() {
               <button
                 type="button"
                 onClick={() => setShowTermsModal(true)}
-                className="w-full py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span>Read Full Venue Operator Agreement</span>
                 <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
@@ -1404,7 +1546,7 @@ export default function VenueOwnerPortalPage() {
             activeTab === 'settings' ? 'text-zinc-950 dark:text-white' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
           }`}
         >
-          <Sliders className="w-5 h-5" />
+          <User className="w-5 h-5" />
           <span>Profile</span>
         </button>
       </footer>
