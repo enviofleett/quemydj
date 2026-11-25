@@ -169,17 +169,6 @@ export default function LandingPage() {
                 <ArrowUpRight className="w-3.5 h-3.5 text-zinc-500" />
               </Link>
             </div>
-            
-            {/* Direct Venue Owner Onboarding Link */}
-            <div className="relative z-10 mt-3 pt-2 text-center border-t border-zinc-100/60">
-              <Link
-                href="/venue"
-                className="text-xs text-zinc-500 hover:text-emerald-700 font-medium transition-colors inline-flex items-center gap-1"
-              >
-                <span>Are you a club or lounge owner?</span>
-                <span className="font-bold underline">Register your venue &rarr;</span>
-              </Link>
-            </div>
           </div>
 
         </div>
