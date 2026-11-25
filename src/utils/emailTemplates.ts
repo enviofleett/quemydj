@@ -4,7 +4,7 @@
  */
 
 // Production hosted CDN logo URL (Gmail, Apple Mail, Outlook, and webmail friendly)
-const HOSTED_BRAND_LOGO_URL = 'https://www.quemydj.com/brand-logo-transparent.png';
+const HOSTED_BRAND_LOGO_URL = 'https://quemydj.com/brand-logo-transparent.png';
 
 export interface EmailLayoutOptions {
   recipientName?: string;
@@ -339,25 +339,46 @@ export function generateGuestReceiptEmail(params: {
   
   const activationCardHtml = params.dashboardActivationUrl
     ? `
-    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 18px 20px; margin: 24px 0 10px 0;">
-      <p style="margin: 0 0 6px 0; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #166534; letter-spacing: 0.5px;">
-        Claim Your Guest Account &amp; Track Status
-      </p>
-      <p style="margin: 0 0 12px 0; font-size: 13px; color: #14532d; line-height: 1.5;">
-        Track this request live in the DJ booth, view your song history, and manage your Club Night Wallet by setting your password.
+    <!-- COMPLETE REGISTRATION PROMPT -->
+    <div style="background-color: #09090b; border: 1px solid #27272a; border-radius: 12px; padding: 22px 20px; margin: 24px 0 10px 0; color: #ffffff;">
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+        <tr>
+          <td style="background-color: #059669; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 12px;">
+            COMPLETE REGISTRATION
+          </td>
+        </tr>
+      </table>
+      <div style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
+        Claim Your Permanent Guest Profile
+      </div>
+      <p style="margin: 0 0 14px 0; font-size: 12px; color: #a1a1aa; line-height: 1.5;">
+        Since you made this request at the booth, your guest tokens and request history are temporarily saved. Complete your free registration in one click to lock in your wallet balance, re-request favorites next weekend, and follow live ETA updates directly.
       </p>
       <table role="presentation" border="0" cellpadding="0" cellspacing="0">
         <tr>
           <td>
-            <a href="${params.dashboardActivationUrl}" target="_blank" style="display: inline-block; background-color: #166534; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 20px; border-radius: 7px;">
-              Create Password &amp; Open Dashboard &rarr;
+            <a href="${params.dashboardActivationUrl}" target="_blank" style="display: inline-block; background-color: #10b981; color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 800; text-decoration: none; padding: 11px 22px; border-radius: 8px;">
+              Complete Registration &amp; Open Dashboard &rarr;
             </a>
           </td>
         </tr>
       </table>
     </div>
     `
-    : '';
+    : `
+    <!-- INVITE TO REGISTER WHEN NO ACTIVATION LINK PRESENT -->
+    <div style="background-color: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 12px; padding: 18px 20px; margin: 24px 0 10px 0;">
+      <div style="font-size: 14px; font-weight: 800; color: #09090b; margin-bottom: 4px;">
+        Take Full Control of Your Night
+      </div>
+      <p style="margin: 0 0 12px 0; font-size: 12px; color: #52525b; line-height: 1.5;">
+        Never lose track of your requests. Register your free account to unlock your Club Night Wallet, view historical setlists, and send priority tokens in 1 tap.
+      </p>
+      <a href="https://quemydj.com/login?role=guest&redirect=/booth" target="_blank" style="display: inline-block; background-color: #09090b; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: 700; text-decoration: none; padding: 9px 18px; border-radius: 7px;">
+        Complete Registration &rarr;
+      </a>
+    </div>
+    `;
 
   const bodyHtml = `
     <div style="background-color: #fcfcfc; border: 1px solid #e4e4e7; border-radius: 10px; padding: 20px; margin: 20px 0;">
@@ -623,37 +644,112 @@ export function generateGuestWelcomeEmail(params: {
   const tpl = getEditableEmailTemplate('welcome_guest');
 
   const bodyHtml = `
-    <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 22px; margin: 20px 0;">
-      <p style="margin: 0 0 8px 0; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #166534; letter-spacing: 0.5px;">
-        VIP Club Night Pass Activated
-      </p>
-      <div style="font-size: 18px; font-weight: 800; color: #14532d; margin-bottom: 8px;">
-        Welcome to the Party, ${params.guestName}!
+    <!-- DJQ HOW IT WORKS HERO CARD -->
+    <div style="background-color: #09090b; border: 1px solid #27272a; border-radius: 14px; padding: 26px 24px; margin: 22px 0; color: #ffffff; text-align: left;">
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
+        <tr>
+          <td style="background-color: #059669; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 20px;">
+            THE SOCIAL PLAYLIST TAKEOVER
+          </td>
+        </tr>
+      </table>
+      
+      <div style="font-size: 20px; font-weight: 800; color: #ffffff; line-height: 1.25; margin-bottom: 8px;">
+        You Are The Party. Now You Run The Music.
       </div>
-      <p style="margin: 0 0 14px 0; font-size: 13px; color: #166534; line-height: 1.5;">
-        You are now connected to the QueMyDJ live nightlife ecosystem. Here is what you get:
+      <p style="margin: 0 0 18px 0; font-size: 13px; line-height: 1.6; color: #a1a1aa;">
+        Welcome to <strong>DJQ (QueMyDJ)</strong> — the platform built so partygoers and friends never have to shout over heavy bass or tap the DJ booth glass again. Here is how your VIP crowd takeover works:
       </p>
-      <ul style="margin: 0 0 14px 0; padding-left: 20px; font-size: 13px; color: #14532d; line-height: 1.8;">
-        <li><strong>Direct DJ Requests:</strong> Send your favorite songs directly to the DJ booth screen.</li>
-        <li><strong>Custom Stage Shoutouts:</strong> Celebrate birthdays and VIP tables with messages on stage.</li>
-        <li><strong>100% Umpire Guarantee:</strong> If the DJ cannot accommodate your jam, your funds return automatically.</li>
-        <li><strong>Club Night Wallet:</strong> Enjoy 1-tap requests all night without repeated bank card authorizations.</li>
-      </ul>
+
+      <!-- 3-STEP EXPLAINER GRID -->
+      <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="border-top: 1px solid #18181b; padding-top: 16px;">
+        <tr>
+          <td style="padding: 10px 0; vertical-align: top;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width: 28px; height: 28px; background-color: #18181b; border: 1px solid #27272a; border-radius: 8px; text-align: center; vertical-align: middle; color: #10b981; font-weight: 800; font-size: 12px; font-family: monospace;">
+                  01
+                </td>
+                <td style="padding-left: 14px; vertical-align: top;">
+                  <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                    Scan the Booth QR Code
+                  </div>
+                  <div style="font-size: 12px; color: #71717a; line-height: 1.5;">
+                    Point your camera at the DJ booth standee or table sticker to connect instantly to the resident selector on duty.
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; vertical-align: top;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width: 28px; height: 28px; background-color: #18181b; border: 1px solid #27272a; border-radius: 8px; text-align: center; vertical-align: middle; color: #10b981; font-weight: 800; font-size: 12px; font-family: monospace;">
+                  02
+                </td>
+                <td style="padding-left: 14px; vertical-align: top;">
+                  <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                    Pick Your Anthem &amp; Drop Tokens
+                  </div>
+                  <div style="font-size: 12px; color: #71717a; line-height: 1.5;">
+                    Search millions of songs or pick the DJ's suggested vibe crates. Use tokens to boost your track and add a crew or birthday shoutout.
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 10px 0; vertical-align: top;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width: 28px; height: 28px; background-color: #18181b; border: 1px solid #27272a; border-radius: 8px; text-align: center; vertical-align: middle; color: #10b981; font-weight: 800; font-size: 12px; font-family: monospace;">
+                  03
+                </td>
+                <td style="padding-left: 14px; vertical-align: top;">
+                  <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 2px;">
+                    Watch the Queue &amp; Hear It Dropped
+                  </div>
+                  <div style="font-size: 12px; color: #71717a; line-height: 1.5;">
+                    Follow real-time ETA countdowns on your phone. If a DJ cannot fit your song due to closing time, your tokens are 100% auto-refunded.
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     </div>
+
+    <!-- QUICK PERKS CALLOUT -->
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 18px 20px; margin-bottom: 10px;">
+      <tr>
+        <td>
+          <div style="font-size: 13px; font-weight: 800; color: #166534; margin-bottom: 4px;">
+            100% Umpire Money-Back Protection
+          </div>
+          <div style="font-size: 12px; color: #14532d; line-height: 1.5;">
+            Your tokens are held safely in escrow. You only pay when your jam is accepted and mixed live into the set.
+          </div>
+        </td>
+      </tr>
+    </table>
   `;
 
   const html = renderQueMyDJEmailBase({
     recipientName: params.guestName,
-    headline: tpl.headline,
-    introText: tpl.introText,
+    headline: 'Welcome to DJQ — You Control the Vibe',
+    introText: 'Your guest VIP profile is all set! Get ready to influence the playlist at your favorite clubs, lounges, and private gatherings.',
     bodyHtml,
-    ctaText: tpl.ctaText,
+    ctaText: 'Connect to Live Booth Now',
     ctaUrl: params.exploreUrl,
-    secondaryNote: tpl.secondaryNote,
+    secondaryNote: 'Nightlife Pro-Tip: Keep tokens in your Club Night Wallet so you can drop your favorite tracks with 1 tap without authorizing your card repeatedly on a loud dancefloor.',
   });
 
   return {
-    subject: tpl.subjectPattern,
+    subject: 'Welcome to DJQ — Take Over The Playlist!',
     html,
   };
 }
