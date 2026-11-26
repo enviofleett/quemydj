@@ -842,7 +842,7 @@ function LoginFormContent() {
                   <ArrowLeft className="w-4 h-4" />
                 </button>
 
-                {/* Role Switcher Pill: Guest vs DJ */}
+                {/* Role Switcher Pill: Guest vs DJ vs Venue */}
                 <div className="flex bg-black/40 backdrop-blur-md p-0.5 rounded-full border border-white/10 text-[11px] font-semibold text-white/80">
                   <button
                     type="button"
@@ -850,7 +850,7 @@ function LoginFormContent() {
                       setRole('guest');
                       setErrorMessage(null);
                     }}
-                    className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                       role === 'guest'
                         ? 'bg-white text-zinc-950 font-bold shadow-sm'
                         : 'hover:text-white'
@@ -864,13 +864,26 @@ function LoginFormContent() {
                       setRole('dj');
                       setErrorMessage(null);
                     }}
-                    className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                       role === 'dj'
                         ? 'bg-white text-zinc-950 font-bold shadow-sm'
                         : 'hover:text-white'
                     }`}
                   >
                     DJ Booth
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.push('/venue');
+                    }}
+                    className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                      role === 'venue'
+                        ? 'bg-white text-zinc-950 font-bold shadow-sm'
+                        : 'hover:text-white'
+                    }`}
+                  >
+                    Venue
                   </button>
                 </div>
               </div>
